@@ -37,10 +37,8 @@
         .hint{margin-top:6px;font-size:0.75rem;color:#6b7280;}
         .edit-info{font-size:0.75rem;color:#10b981;margin-bottom:4px;}
 
-        /* BOARD (no header now) */
         .board{flex:1;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);position:relative;overflow:hidden;}
 
-        /* BOXES */
         .clipboard-item{
             position:absolute;
             min-width:100px;
@@ -73,120 +71,231 @@
 
         .notification{position:fixed;right:20px;bottom:20px;background:#10b981;color:#fff;padding:8px 12px;border-radius:6px;font-size:0.85rem;display:flex;gap:6px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);opacity:0;transform:translateY(100px);transition:all .3s;z-index:100;}
         .notification.show{opacity:1;transform:translateY(0);}
+
+        /* MULTI COPY PANEL - Draggable, Full Content Display */
+        .multi-copy-panel {
+            position: fixed;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 220px;
+            max-height: 80vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+            border: 1px solid #e5e7eb;
+            cursor: move;
+        }
+        .multi-copy-panel.active {
+            display: flex;
+        }
+        .multi-panel-header {
+            font-size: 11px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: move;
+        }
+        .multi-items-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 8px;
+            max-height: 500px;
+            cursor: default;
+        }
+        .multi-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            font-size: 10px;
+            color: #374151;
+            word-break: break-word;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            max-height: none;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .multi-clear-btn {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .multi-clear-btn:hover {
+            background: #dc2626;
+        }
+        .multi-toggle-btn {
+            background: #10b981 !important;
+        }
+        .multi-toggle-btn.active {
+            background: #ef4444 !important;
+        }
+        
+        /* FLOATING RIGHT TOGGLE BUTTON */
+        .multi-float-toggle {
+            position: fixed;
+            right: 10px;
+            top: 20px;
+            width: 50px;
+            height: 50px;
+            background: #10b981;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.2s;
+        }
+        .multi-float-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+        .multi-float-toggle.active {
+            background: #ef4444;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <!-- LEFT PANEL -->
-    <div class="add-panel-wrapper">
-        <div class="add-panel" id="addPanel">
-            <div class="panel-title">
-                <i class="fas fa-layer-group"></i><span>Box Editor</span>
-            </div>
-            <div class="mode-label" id="modeLabel">Mode: Add new</div>
-            <div class="edit-info" id="editInfo" style="display:none;">
-                Editing box ID: <span id="editIdSpan"></span>
-            </div>
+    <div class="container">
+        <div class="add-panel-wrapper">
+            <div class="add-panel collapsed" id="addPanel">
+                <div class="panel-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Clipboard Manager
+                </div>
 
-            <label for="headingInput">Heading (shown on box)</label>
-            <input type="text" id="headingInput" placeholder="e.g. Gmail Login">
+                <div class="mode-label" id="modeLabel">Mode: Add new</div>
+                <div class="edit-info" id="editInfo" style="display:none">
+                    Editing Box ID: <span id="editId"></span>
+                </div>
 
-            <label for="contentInput">Content (copied to clipboard)</label>
-            <textarea id="contentInput" placeholder="Actual text / password / code..."></textarea>
+                <label>Heading (optional - shown on box)</label>
+                <input type="text" id="headingInput" placeholder="e.g. Email Address">
 
-            <label style="margin-top:8px;">Background color</label>
-            <div class="color-options" id="colorOptions">
-                <div class="color-option selected" style="background:#3b82f6" data-color="#3b82f6"></div>
-                <div class="color-option" style="background:#ef4444" data-color="#ef4444"></div>
-                <div class="color-option" style="background:#f97316" data-color="#f97316"></div>
-                <div class="color-option" style="background:#22c55e" data-color="#22c55e"></div>
-                <div class="color-option" style="background:#eab308" data-color="#eab308"></div>
-                <div class="color-option" style="background:#6366f1" data-color="#6366f1"></div>
-            </div>
-            <div class="custom-color">
-                <input type="color" id="customColor" value="#3b82f6">
-                <span style="font-size:0.8rem;color:#6b7280;">Custom</span>
-            </div>
+                <label>Content (what to copy)</label>
+                <textarea id="contentInput" placeholder="Enter the text to copy..."></textarea>
 
-            <button class="btn" id="addBtn"><i class="fas fa-plus"></i>Add new box</button>
-            <button class="btn secondary" id="updateBtn" disabled>
-                <i class="fas fa-pen"></i>Update selected box
-            </button>
+                <label>Pick Color</label>
+                <div class="color-options" id="colorOptions">
+                    <div class="color-option selected" data-color="#6366f1" style="background:#6366f1"></div>
+                    <div class="color-option" data-color="#ec4899" style="background:#ec4899"></div>
+                    <div class="color-option" data-color="#f59e0b" style="background:#f59e0b"></div>
+                    <div class="color-option" data-color="#10b981" style="background:#10b981"></div>
+                    <div class="color-option" data-color="#3b82f6" style="background:#3b82f6"></div>
+                    <div class="color-option" data-color="#8b5cf6" style="background:#8b5cf6"></div>
+                </div>
 
-            <div class="hint">
-                Only <strong>content</strong> is copied when you click a box; heading is just for identifying the box.
-            </div>
+                <div class="custom-color">
+                    <input type="color" id="customColor" value="#6366f1">
+                    <span style="font-size:0.75rem">Custom Hex</span>
+                </div>
 
-            <div style="margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px;">
-                <div style="font-size:0.8rem;margin-bottom:6px;color:#6b7280;">Quick add (heading + content)</div>
+                <button class="btn" id="addBtn"><i class="fas fa-plus"></i>Add new box</button>
+                <button class="btn secondary" id="updateBtn" disabled>
+                    <i class="fas fa-pen"></i>Update selected box
+                </button>
+                <button class="btn multi-toggle-btn" id="multiCopyBtn">
+                    <i class="fas fa-layer-group"></i>Multi Copy
+                </button>
+
+                <div class="mode-label">Quick Actions</div>
                 <div class="quick-buttons">
-                    <button class="quick-btn" data-heading="Email" data-content="user@email.com">
-                        Email
-                    </button>
-                    <button class="quick-btn" data-heading="API Key" data-content="API_KEY_123">
-                        API
-                    </button>
-                    <button class="quick-btn" data-heading="Password" data-content="Pass@123">
-                        Password
-                    </button>
-                    <button class="quick-btn" data-heading="Phone" data-content="+123456789">
-                        Phone
-                    </button>
+                    <button class="quick-btn" data-heading="Email" data-content="user@email.com">Email</button>
+                    <button class="quick-btn" data-heading="API Key" data-content="API_KEY_123">API</button>
+                    <button class="quick-btn" data-heading="Password" data-content="Pass@123">Password</button>
+                    <button class="quick-btn" data-heading="Phone" data-content="+123456789">Phone</button>
+                </div>
+
+                <div class="hint">
+                    Ctrl+Enter to add • Click box to copy & edit • Ctrl+Shift+X to clear all
                 </div>
             </div>
+
+            <div class="collapse-toggle" id="collapseToggle">
+                <i class="fas fa-chevron-left"></i>
+            </div>
         </div>
 
-        <div class="collapse-toggle" id="collapseToggle">
-            <i class="fas fa-angle-left"></i>
-        </div>
+        <div class="board" id="board"></div>
     </div>
 
-    <!-- BOARD (no header) -->
-    <div class="board" id="board"></div>
-</div>
+    <div class="notification" id="notification"></div>
 
-<div class="notification" id="notification">
-    <i class="fas fa-check-circle"></i><span id="notificationText">Copied</span>
-</div>
+    <!-- FLOATING MULTI COPY TOGGLE -->
+    <button class="multi-float-toggle" id="multiFloatToggle">
+        <i class="fas fa-layer-group"></i>
+    </button>
+
+    <!-- MULTI COPY PANEL (DRAGGABLE) -->
+    <div class="multi-copy-panel" id="multiCopyPanel">
+        <div class="multi-panel-header" id="multiPanelHeader">
+            <i class="fas fa-layer-group" style="font-size:10px"></i>
+            <span>Combined Copy</span>
+        </div>
+        <div class="multi-items-list" id="multiItemsList"></div>
+        <button class="multi-clear-btn" id="multiClearBtn">Clear All</button>
+    </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const board = document.getElementById('board');
-    const headingInput = document.getElementById('headingInput');
-    const contentInput = document.getElementById('contentInput');
-    const addBtn = document.getElementById('addBtn');
-    const updateBtn = document.getElementById('updateBtn');
-    const colorOptions = document.querySelectorAll('.color-option');
-    const customColor = document.getElementById('customColor');
-    const quickButtons = document.querySelectorAll('.quick-btn');
-    const notification = document.getElementById('notification');
-    const notificationText = document.getElementById('notificationText');
-    const modeLabel = document.getElementById('modeLabel');
-    const editInfo = document.getElementById('editInfo');
-    const editIdSpan = document.getElementById('editIdSpan');
-    const addPanel = document.getElementById('addPanel');
-    const collapseToggle = document.getElementById('collapseToggle');
+document.addEventListener('DOMContentLoaded',()=>{
+    const board=document.getElementById('board');
+    const headingInput=document.getElementById('headingInput');
+    const contentInput=document.getElementById('contentInput');
+    const addBtn=document.getElementById('addBtn');
+    const updateBtn=document.getElementById('updateBtn');
+    const colorOptions=document.querySelectorAll('.color-option');
+    const customColor=document.getElementById('customColor');
+    const quickButtons=document.querySelectorAll('.quick-btn');
+    const notification=document.getElementById('notification');
+    const addPanel=document.getElementById('addPanel');
+    const collapseToggle=document.getElementById('collapseToggle');
+    const editInfo=document.getElementById('editInfo');
+    const editIdSpan=document.getElementById('editId');
+    const modeLabel=document.getElementById('modeLabel');
 
-    let selectedColor = '#3b82f6';
-    // items: id, heading, content, color, x,y,w,h
-    let items = JSON.parse(localStorage.getItem('clipboardLayoutV2') || '[]');
-    let selectedId = null;
+    let items=JSON.parse(localStorage.getItem('clipboard_layout_items'))||[];
+    let selectedColor='#6366f1';
+    let selectedId=null;
+
+    const multiCopyBtn=document.getElementById('multiCopyBtn');
+    const multiFloatToggle=document.getElementById('multiFloatToggle');
+    const multiCopyPanel=document.getElementById('multiCopyPanel');
+    const multiPanelHeader=document.getElementById('multiPanelHeader');
+    const multiItemsList=document.getElementById('multiItemsList');
+    const multiClearBtn=document.getElementById('multiClearBtn');
+
+    let multiCopyActive=false;
+    let multiCopyItems=[];
 
     function saveLayout(){
-        localStorage.setItem('clipboardLayoutV2', JSON.stringify(items));
+        localStorage.setItem('clipboard_layout_items',JSON.stringify(items));
     }
 
     function showNotification(msg,type='success'){
-        const colors={
-            success:'#10b981',
-            error:'#ef4444',
-            info:'#3b82f6',
-            warning:'#f59e0b'
-        };
-        notification.style.backgroundColor = colors[type] || colors.success;
-        notificationText.textContent = msg;
+        notification.textContent=msg;
+        notification.style.background=type==='success'?'#10b981':(type==='error'?'#ef4444':'#3b82f6');
         notification.classList.add('show');
-        setTimeout(()=>notification.classList.remove('show'),1500);
+        setTimeout(()=>notification.classList.remove('show'),2500);
     }
 
     function escapeHtml(text){
@@ -197,11 +306,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function clearSelection(){
         document.querySelectorAll('.clipboard-item').forEach(el=>el.classList.remove('selected'));
-        selectedId = null;
-        updateBtn.disabled = true;
-        modeLabel.textContent = 'Mode: Add new';
-        editInfo.style.display = 'none';
-        editIdSpan.textContent = '';
+        selectedId=null;
+        updateBtn.disabled=true;
+        modeLabel.textContent='Mode: Add new';
+        editInfo.style.display='none';
+        editIdSpan.textContent='';
     }
 
     function renderItems(){
@@ -229,26 +338,32 @@ document.addEventListener('DOMContentLoaded', () => {
             attachDrag(el,item.id);
             attachResize(el,item.id);
 
-            // click → select + copy CONTENT ONLY
             el.addEventListener('click',(e)=>{
                 if (e.target.closest('.delete-btn') || e.target.closest('.resize-handle')) return;
 
-                selectedId = item.id;
+                selectedId=item.id;
                 document.querySelectorAll('.clipboard-item').forEach(b=>b.classList.remove('selected'));
                 el.classList.add('selected');
                 loadItemIntoEditor(item);
 
                 navigator.clipboard.writeText(item.content || '').then(()=>{
                     el.classList.add('copied');
-                    showNotification('Content copied','success');
+                    
+                    if(multiCopyActive){
+                        multiCopyItems.push(item.content || '');
+                        renderMultiList();
+                        showNotification('Added to multi-copy','success');
+                    }else{
+                        showNotification('Content copied','success');
+                    }
+                    
                     setTimeout(()=>el.classList.remove('copied'),700);
                 }).catch(()=>showNotification('Copy failed','error'));
             });
 
-            // delete
             el.querySelector('.delete-btn').addEventListener('click',(e)=>{
                 e.stopPropagation();
-                items = items.filter(it=>it.id!==item.id);
+                items=items.filter(it=>it.id!==item.id);
                 saveLayout();
                 if(selectedId===item.id) clearSelection();
                 renderItems();
@@ -258,29 +373,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadItemIntoEditor(item){
-        headingInput.value = item.heading || '';
-        contentInput.value = item.content || '';
-        selectedColor = item.color;
-        customColor.value = item.color;
+        headingInput.value=item.heading || '';
+        contentInput.value=item.content || '';
+        selectedColor=item.color;
+        customColor.value=item.color;
         colorOptions.forEach(o=>{
             o.classList.toggle('selected', o.dataset.color===item.color);
         });
-        modeLabel.textContent = 'Mode: Edit selected';
+        modeLabel.textContent='Mode: Edit selected';
         editInfo.style.display='block';
-        editIdSpan.textContent = item.id;
+        editIdSpan.textContent=item.id;
         updateBtn.disabled=false;
     }
 
     function attachDrag(element,id){
-        let offsetX,offsetY,dragging=false;
+        let dragging=false,offsetX,offsetY;
 
         element.addEventListener('mousedown',e=>{
-            if (e.target.closest('.resize-handle') || e.target.closest('.delete-btn')) return;
+            if (e.target.closest('.delete-btn') || e.target.closest('.resize-handle')) return;
             dragging=true;
             const rect=element.getBoundingClientRect();
+            const boardRect=board.getBoundingClientRect();
             offsetX=e.clientX-rect.left;
             offsetY=e.clientY-rect.top;
-            element.style.zIndex=10;
+            element.style.zIndex=1000;
         });
 
         document.addEventListener('mousemove',e=>{
@@ -379,16 +495,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const idx=items.findIndex(it=>it.id===selectedId);
         if(idx===-1) return;
-        const newHeading = headingInput.value.trim();
-        items[idx].heading = newHeading || items[idx].heading;
-        items[idx].content = contentInput.value;
-        items[idx].color = selectedColor;
+        const newHeading=headingInput.value.trim();
+        items[idx].heading=newHeading || items[idx].heading;
+        items[idx].content=contentInput.value;
+        items[idx].color=selectedColor;
         saveLayout();
         renderItems();
         showNotification('Box updated','success');
     }
 
-    // COLOR HANDLING
+    function renderMultiList(){
+        multiItemsList.innerHTML='';
+        multiCopyItems.forEach((text)=>{
+            const div=document.createElement('div');
+            div.className='multi-item';
+            div.textContent=text;
+            multiItemsList.appendChild(div);
+        });
+        
+        if(multiCopyItems.length>0){
+            const combined=multiCopyItems.join('\n');
+            navigator.clipboard.writeText(combined).catch(()=>{});
+        }
+    }
+
+    function toggleMultiCopy(){
+        multiCopyActive=!multiCopyActive;
+        multiCopyPanel.classList.toggle('active',multiCopyActive);
+        multiCopyBtn.classList.toggle('active',multiCopyActive);
+        multiFloatToggle.classList.toggle('active',multiCopyActive);
+        
+        if(multiCopyActive){
+            multiCopyBtn.innerHTML='<i class="fas fa-stop-circle"></i>Stop Multi';
+            multiFloatToggle.innerHTML='<i class="fas fa-stop-circle"></i>';
+            showNotification('Multi-Copy Mode ON','success');
+        }else{
+            multiCopyBtn.innerHTML='<i class="fas fa-layer-group"></i>Multi Copy';
+            multiFloatToggle.innerHTML='<i class="fas fa-layer-group"></i>';
+            multiCopyItems=[];
+            renderMultiList();
+            showNotification('Multi-Copy Mode OFF','info');
+        }
+    }
+
+    multiCopyBtn.addEventListener('click',toggleMultiCopy);
+    multiFloatToggle.addEventListener('click',toggleMultiCopy);
+
+    multiClearBtn.addEventListener('click',()=>{
+        multiCopyItems=[];
+        renderMultiList();
+        navigator.clipboard.writeText('');
+        showNotification('Multi-copy list cleared','info');
+    });
+
+    let panelDragging=false;
+    let panelOffsetX=0;
+    let panelOffsetY=0;
+
+    multiPanelHeader.addEventListener('mousedown',(e)=>{
+        panelDragging=true;
+        const rect=multiCopyPanel.getBoundingClientRect();
+        panelOffsetX=e.clientX-rect.left;
+        panelOffsetY=e.clientY-rect.top;
+        multiCopyPanel.style.cursor='grabbing';
+    });
+
+    document.addEventListener('mousemove',(e)=>{
+        if(!panelDragging) return;
+        let x=e.clientX-panelOffsetX;
+        let y=e.clientY-panelOffsetY;
+        
+        const maxX=window.innerWidth-multiCopyPanel.offsetWidth;
+        const maxY=window.innerHeight-multiCopyPanel.offsetHeight;
+        x=Math.max(0,Math.min(x,maxX));
+        y=Math.max(0,Math.min(y,maxY));
+        
+        multiCopyPanel.style.left=x+'px';
+        multiCopyPanel.style.top=y+'px';
+        multiCopyPanel.style.transform='none';
+        multiCopyPanel.style.right='auto';
+    });
+
+    document.addEventListener('mouseup',()=>{
+        if(!panelDragging) return;
+        panelDragging=false;
+        multiCopyPanel.style.cursor='move';
+    });
+
     colorOptions.forEach(opt=>{
         opt.addEventListener('click',()=>{
             colorOptions.forEach(o=>o.classList.remove('selected'));
@@ -402,7 +595,6 @@ document.addEventListener('DOMContentLoaded', () => {
         colorOptions.forEach(o=>o.classList.remove('selected'));
     });
 
-    // BUTTONS
     addBtn.addEventListener('click',()=>addItem(headingInput.value,contentInput.value));
     contentInput.addEventListener('keydown',e=>{
         if((e.ctrlKey||e.metaKey)&&e.key==='Enter') addItem(headingInput.value,contentInput.value);
@@ -415,7 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // CLEAR ALL: keep for convenience (Ctrl+Shift+R etc. not needed)
     document.addEventListener('keydown',(e)=>{
         if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='x'){
             if(!items.length) return;
@@ -428,12 +619,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // COLLAPSE PANEL
     collapseToggle.addEventListener('click',()=>{
         addPanel.classList.toggle('collapsed');
     });
 
-    // INITIAL RENDER
     renderItems();
 });
 </script>
