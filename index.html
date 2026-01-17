@@ -10,11 +10,16 @@ body{background:#f3f4f6;min-height:100vh;}
 .container{display:flex;height:100vh;padding:10px;gap:10px;}
 /* LEFT PANEL + TOGGLE */
 .add-panel-wrapper{position:relative;transition:width .25s;}
-.add-panel{width:260px;background:#fff;border-radius:8px;padding:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1);height:100%;display:flex;flex-direction:column;overflow-y:auto;}
+.add-panel{width:260px;background:#fff;border-radius:8px;padding:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1);height:100%;display:flex;flex-direction:column;overflow-y:auto;transition:all 0.3s ease;}
 .add-panel.collapsed{width:0;padding:0;overflow:hidden;box-shadow:none;}
-.collapse-toggle{position:absolute;top:10px;right:-16px;width:16px;height:60px;background:#111827;color:#fff;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:5;}
+.collapse-toggle{position:absolute;top:10px;right:-16px;width:16px;height:60px;background:#111827;color:#fff;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:5;transition:all 0.3s ease;}
 .collapse-toggle i{transition:transform .25s;}
 .collapsed + .collapse-toggle i{transform:rotate(180deg);}
+.collapse-toggle.pulse{animation:togglePulse 2s infinite;}
+@keyframes togglePulse{
+0%,100%{background:#111827;}
+50%{background:#6366f1;}
+}
 .panel-title{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:1rem;font-weight:600;}
 .mode-label{font-size:0.75rem;color:#6b7280;margin-bottom:6px;}
 label{display:block;margin-bottom:4px;font-size:0.8rem;font-weight:600;color:#4b5563;}
@@ -266,7 +271,7 @@ Can add multiple lines"></textarea>
 <button class="quick-btn" data-heading="Phone" data-content="+123456789">Phone</button>
 </div>
 <div class="hint">
-Ctrl+Enter to add • Click box to copy & edit • Ctrl+Shift+X to clear all • Drag corner to resize inputs • Save button creates downloadable file
+Ctrl+Enter to add • Click box to copy & edit • Ctrl+Shift+X to clear all • Panel auto-hides after 5s inactivity
 </div>
 </div>
 <div class="collapse-toggle" id="collapseToggle">
@@ -312,6 +317,38 @@ const collapseToggle=document.getElementById('collapseToggle');
 const editInfo=document.getElementById('editInfo');
 const editIdSpan=document.getElementById('editId');
 const modeLabel=document.getElementById('modeLabel');
+
+// AUTO-HIDE FUNCTIONALITY
+let autoHideTimer = null;
+let isPanelManuallyCollapsed = true; // Start collapsed
+
+function resetAutoHideTimer() {
+clearTimeout(autoHideTimer);
+// Only auto-hide if panel is currently open
+if (!addPanel.classList.contains('collapsed')) {
+autoHideTimer = setTimeout(() => {
+addPanel.classList.add('collapsed');
+collapseToggle.classList.add('pulse');
+setTimeout(() => collapseToggle.classList.remove('pulse'), 3000);
+}, 5000); // 5 seconds
+}
+}
+
+function showPanel() {
+addPanel.classList.remove('collapsed');
+collapseToggle.classList.remove('pulse');
+resetAutoHideTimer();
+}
+
+// Track all panel interactions to reset timer
+const panelWrapper = document.querySelector('.add-panel-wrapper');
+panelWrapper.addEventListener('mousemove', resetAutoHideTimer);
+panelWrapper.addEventListener('mouseenter', resetAutoHideTimer);
+panelWrapper.addEventListener('click', resetAutoHideTimer);
+panelWrapper.addEventListener('keydown', resetAutoHideTimer);
+panelWrapper.addEventListener('input', resetAutoHideTimer);
+panelWrapper.addEventListener('change', resetAutoHideTimer);
+panelWrapper.addEventListener('scroll', resetAutoHideTimer);
 
 // Load items from embedded data first, then fallback to localStorage
 let embeddedDataElement = document.getElementById('embeddedData');
@@ -518,6 +555,7 @@ renderItems();
 headingInput.value='';
 contentInput.value='';
 contentInput.focus();
+resetAutoHideTimer();
 }
 
 function updateSelectedItem(){
@@ -534,18 +572,16 @@ items[idx].color=selectedColor;
 saveLayout();
 renderItems();
 showNotification('Box updated','success');
+resetAutoHideTimer();
 }
 
 function saveToFile() {
-// Get current HTML document
 const htmlDoc = document.documentElement.outerHTML;
-// Replace the embedded data section with current items
 const dataScript = `<script id="embeddedData" type="application/json">\n${JSON.stringify(items, null, 2)}\n<\/script>`;
 const updatedHtml = htmlDoc.replace(
 /<script id="embeddedData" type="application\/json">[\s\S]*?<\/script>/,
 dataScript
 );
-// Create blob and download
 const blob = new Blob([updatedHtml], { type: 'text/html' });
 const url = URL.createObjectURL(blob);
 const a = document.createElement('a');
@@ -556,6 +592,7 @@ a.click();
 document.body.removeChild(a);
 URL.revokeObjectURL(url);
 showNotification('HTML file saved with ' + items.length + ' items!', 'success');
+resetAutoHideTimer();
 }
 
 function renderMultiList(){
@@ -588,6 +625,7 @@ multiCopyItems=[];
 renderMultiList();
 showNotification('Multi-Copy Mode OFF','info');
 }
+resetAutoHideTimer();
 }
 
 multiCopyBtn.addEventListener('click',toggleMultiCopy);
@@ -634,12 +672,14 @@ colorOptions.forEach(o=>o.classList.remove('selected'));
 opt.classList.add('selected');
 selectedColor=opt.dataset.color;
 customColor.value=selectedColor;
+resetAutoHideTimer();
 });
 });
 
 customColor.addEventListener('change',e=>{
 selectedColor=e.target.value;
 colorOptions.forEach(o=>o.classList.remove('selected'));
+resetAutoHideTimer();
 });
 
 addBtn.addEventListener('click',()=>addItem(headingInput.value,contentInput.value));
@@ -668,7 +708,16 @@ renderItems();
 });
 
 collapseToggle.addEventListener('click',()=>{
+const wasCollapsed = addPanel.classList.contains('collapsed');
 addPanel.classList.toggle('collapsed');
+collapseToggle.classList.remove('pulse');
+if (!wasCollapsed) {
+// Panel is now collapsed, clear timer
+clearTimeout(autoHideTimer);
+} else {
+// Panel is now open, start timer
+resetAutoHideTimer();
+}
 });
 
 renderItems();
