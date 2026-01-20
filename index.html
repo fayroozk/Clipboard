@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Clipboard Manager (v9 - Wheel Effect)</title>
+  <title>Clipboard Manager (v10 - Easy Save)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;}
@@ -477,7 +477,7 @@
 
         <button class="btn" id="addBtn"><i class="fas fa-plus"></i>Add new box</button>
         <button class="btn secondary" id="updateBtn" disabled><i class="fas fa-pen"></i>Update selected box</button>
-        <button class="btn save" id="saveFileBtn"><i class="fas fa-save"></i>Save to HTML File</button>
+        <button class="btn save" id="saveFileBtn"><i class="fas fa-download"></i>Download HTML</button>
         <button class="btn multi-toggle-btn" id="multiCopyBtn"><i class="fas fa-layer-group"></i>Multi Copy</button>
 
         <div class="mode-label" style="margin-top:8px;">Quick Actions</div>
@@ -489,7 +489,7 @@
         </div>
 
         <div class="hint">
-          Ctrl+Enter to add • Click box to copy & edit • Right-click for menu • Ctrl+Shift+X to clear current page • Right-click page tabs for options • Drag pages to reorder
+          💡 Tip: Save downloads as "clipboard-manager.html" and replace when asked. Auto-saves to localStorage. • Ctrl+Enter to add • Click box to copy • Drag pages to reorder
         </div>
       </div>
 
@@ -555,7 +555,7 @@
   <div class="copy-toast" id="copyToast">Copied</div>
 
   <div class="floating-buttons">
-    <button class="float-btn float-save" id="saveFloatToggle" title="Save to HTML"><i class="fas fa-save"></i></button>
+    <button class="float-btn float-save" id="saveFloatToggle" title="Download HTML File"><i class="fas fa-download"></i></button>
     <button class="float-btn float-multi" id="multiFloatToggle" title="Multi Copy"><i class="fas fa-layer-group"></i></button>
   </div>
 
@@ -770,7 +770,7 @@
       try{ embedded = JSON.parse(document.getElementById('embeddedData').textContent || '{"pages":[],"items":[]}'); }catch(e){}
 
       let ls = {pages:[], items:[]};
-      try{ ls = JSON.parse(localStorage.getItem('clipboard_v9_data') || '{"pages":[],"items":[]}'); }catch(e){}
+      try{ ls = JSON.parse(localStorage.getItem('clipboard_v10_data') || '{"pages":[],"items":[]}'); }catch(e){}
 
       const usePages = (Array.isArray(embedded.pages) && embedded.pages.length) ? embedded.pages : (Array.isArray(ls.pages) ? ls.pages : []);
       const useItems = (Array.isArray(embedded.items) && embedded.items.length) ? embedded.items : (Array.isArray(ls.items) ? ls.items : []);
@@ -801,7 +801,7 @@
     }
 
     function saveData(){
-      localStorage.setItem('clipboard_v9_data', JSON.stringify({pages, items}));
+      localStorage.setItem('clipboard_v10_data', JSON.stringify({pages, items}));
     }
 
     function boardBounds(){
@@ -1341,12 +1341,15 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'clipboard-manager-v9-' + new Date().toISOString().slice(0,10) + '.html';
+      
+      // Fixed filename - always use same name for easy replacement
+      a.download = 'clipboard-manager.html';
+      
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      notify(`Saved ${pages.length} pages, ${items.length} items`, 'success');
+      notify(`Downloaded! Save as "clipboard-manager.html" and replace when asked`, 'success');
       resetAutoHideTimer();
     }
 
