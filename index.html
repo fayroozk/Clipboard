@@ -3,14 +3,291 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Clipboard Manager (Rewritten v3)</title>
+  <title>Clipboard Manager (v6 - Slim Tabs)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;}
     body{background:#f3f4f6;min-height:100vh;}
     .container{display:flex;height:100vh;padding:10px;gap:10px;}
 
-    /* Left panel */
+    /* Page navigation bar (left side, ribbon style - SLIM VERSION) */
+    .page-nav{width:180px;background:transparent;border-radius:0;padding:10px 5px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
+    
+    .page-tab{
+      min-height:35px;
+      border:none;
+      border-radius:0;
+      color:#fff;
+      font-size:10px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:all .3s ease;
+      position:relative;
+      padding:6px 8px 6px 4px;
+      clip-path:polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+      box-shadow:2px 2px 4px rgba(0,0,0,.2);
+      text-align:center;
+      line-height:1.2;
+    }
+    
+    .page-tab::before{
+      content:'';
+      position:absolute;
+      right:0;
+      top:0;
+      width:15px;
+      height:100%;
+      background:linear-gradient(90deg, transparent, rgba(0,0,0,.15));
+      pointer-events:none;
+    }
+    
+    .page-tab:hover{
+      transform:translateX(-3px) scale(1.03);
+      box-shadow:3px 4px 8px rgba(0,0,0,.3);
+    }
+    
+    .page-tab.active{
+      transform:translateX(-5px) scale(1.05);
+      box-shadow:4px 6px 12px rgba(0,0,0,.4);
+      filter:brightness(1.15);
+    }
+    
+    .page-tab .page-number{
+      font-size:10px;
+      opacity:.95;
+      text-shadow:1px 1px 2px rgba(0,0,0,.3);
+      word-break:break-word;
+    }
+    
+    .page-tab .item-count{
+      position:absolute;
+      top:2px;
+      right:6px;
+      background:#fff;
+      font-size:8px;
+      font-weight:900;
+      padding:1px 4px;
+      border-radius:8px;
+      min-width:14px;
+      text-align:center;
+      box-shadow:0 2px 4px rgba(0,0,0,.3);
+    }
+    
+    .page-add-btn{
+      min-height:32px;
+      background:linear-gradient(135deg, #27ae60 0%, #229954 100%);
+      border:none;
+      border-radius:0;
+      color:#fff;
+      font-size:16px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-top:auto;
+      clip-path:polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+      box-shadow:2px 2px 4px rgba(0,0,0,.2);
+      transition:all .3s ease;
+      position:relative;
+    }
+    
+    .page-add-btn::before{
+      content:'';
+      position:absolute;
+      right:0;
+      top:0;
+      width:15px;
+      height:100%;
+      background:linear-gradient(90deg, transparent, rgba(0,0,0,.15));
+      pointer-events:none;
+    }
+    
+    .page-add-btn:hover{
+      transform:translateX(-3px) scale(1.03);
+      box-shadow:3px 4px 8px rgba(0,0,0,.3);
+      filter:brightness(1.1);
+    }
+
+    /* Modal Dialog for Add Page */
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.6);
+      backdrop-filter:blur(4px);
+      z-index:9000;
+      animation:fadeIn .3s ease;
+    }
+    
+    .modal-overlay.show{display:flex;align-items:center;justify-content:center;}
+    
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    @keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    
+    .modal-dialog{
+      background:#fff;
+      border-radius:16px;
+      padding:28px;
+      width:90%;
+      max-width:420px;
+      box-shadow:0 20px 60px rgba(0,0,0,.3);
+      animation:slideUp .3s ease;
+    }
+    
+    .modal-header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:20px;
+      padding-bottom:16px;
+      border-bottom:2px solid #e5e7eb;
+    }
+    
+    .modal-header i{
+      font-size:24px;
+      color:#6366f1;
+    }
+    
+    .modal-header h2{
+      font-size:20px;
+      color:#111827;
+      font-weight:800;
+    }
+    
+    .modal-body{margin-bottom:24px;}
+    
+    .form-group{margin-bottom:20px;}
+    
+    .form-group label{
+      display:block;
+      font-size:14px;
+      font-weight:700;
+      color:#374151;
+      margin-bottom:8px;
+    }
+    
+    .form-group input[type="text"]{
+      width:100%;
+      padding:12px 14px;
+      border:2px solid #e5e7eb;
+      border-radius:8px;
+      font-size:15px;
+      transition:all .2s;
+    }
+    
+    .form-group input[type="text"]:focus{
+      outline:none;
+      border-color:#6366f1;
+      box-shadow:0 0 0 3px rgba(99,102,241,.1);
+    }
+    
+    .color-picker-wrapper{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:10px;
+      margin-bottom:12px;
+    }
+    
+    .color-choice{
+      width:100%;
+      aspect-ratio:1;
+      border-radius:10px;
+      cursor:pointer;
+      border:3px solid transparent;
+      transition:all .2s;
+      position:relative;
+      box-shadow:0 2px 6px rgba(0,0,0,.15);
+    }
+    
+    .color-choice:hover{
+      transform:scale(1.08);
+      box-shadow:0 4px 12px rgba(0,0,0,.25);
+    }
+    
+    .color-choice.selected{
+      border-color:#111827;
+      transform:scale(1.1);
+    }
+    
+    .color-choice.selected::after{
+      content:'✓';
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:24px;
+      font-weight:900;
+      text-shadow:0 2px 4px rgba(0,0,0,.4);
+    }
+    
+    .custom-color-input{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      background:#f9fafb;
+      border-radius:8px;
+    }
+    
+    .custom-color-input input[type="color"]{
+      width:50px;
+      height:50px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+    }
+    
+    .custom-color-input span{
+      font-size:13px;
+      color:#6b7280;
+      font-weight:600;
+    }
+    
+    .modal-footer{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+    }
+    
+    .modal-btn{
+      padding:12px 24px;
+      border:none;
+      border-radius:8px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:all .2s;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    
+    .modal-btn.cancel{
+      background:#f3f4f6;
+      color:#6b7280;
+    }
+    
+    .modal-btn.cancel:hover{
+      background:#e5e7eb;
+      color:#374151;
+    }
+    
+    .modal-btn.create{
+      background:linear-gradient(135deg,#6366f1,#4f46e5);
+      color:#fff;
+    }
+    
+    .modal-btn.create:hover{
+      box-shadow:0 6px 16px rgba(99,102,241,.4);
+      transform:translateY(-2px);
+    }
+
+    /* Left panel (clipboard manager - auto-hide) */
     .add-panel-wrapper{position:relative;transition:width .25s;}
     .add-panel{width:270px;background:#fff;border-radius:8px;padding:15px;box-shadow:0 2px 8px rgba(0,0,0,.1);height:100%;display:flex;flex-direction:column;overflow-y:auto;transition:all .25s ease;}
     .add-panel.collapsed{width:0;padding:0;overflow:hidden;box-shadow:none;}
@@ -21,6 +298,7 @@
     @keyframes togglePulse{0%,100%{background:#111827;}50%{background:#6366f1;}}
 
     .panel-title{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:1rem;font-weight:700;color:#111827;}
+    .current-page-indicator{font-size:.7rem;color:#6366f1;font-weight:700;margin-bottom:6px;}
     .mode-label{font-size:.75rem;color:#6b7280;margin-bottom:6px;}
     .edit-info{font-size:.75rem;color:#10b981;margin-bottom:6px;display:none;}
 
@@ -58,7 +336,7 @@
     .copy-indicator{position:absolute;left:4px;top:4px;padding:2px 4px;border-radius:3px;background:rgba(16,185,129,.9);color:#fff;font-size:9px;opacity:0;transition:opacity .2s;}
     .clipboard-item.copied .copy-indicator{opacity:1;}
 
-    /* Alignment guides (Canva-like) */
+    /* Alignment guides */
     .align-guides{position:absolute;inset:0;pointer-events:none;z-index:4000;}
     .guide-line{position:absolute;background:rgba(99,102,241,.85);display:none;}
     .guide-line.v{width:1px;top:0;bottom:0;}
@@ -69,7 +347,6 @@
     .notification{position:fixed;right:20px;bottom:20px;background:#10b981;color:#fff;padding:8px 12px;border-radius:6px;font-size:.85rem;display:flex;gap:8px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.2);opacity:0;transform:translateY(60px);transition:all .25s;z-index:2000;}
     .notification.show{opacity:1;transform:translateY(0);}
 
-    /* Small "Copied" toast near clicked item */
     .copy-toast{position:fixed;z-index:6000;pointer-events:none;background:#111827;color:#fff;font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:0;transform:translateY(4px);transition:opacity .12s ease, transform .12s ease;}
     .copy-toast.show{opacity:1;transform:translateY(0);}
 
@@ -102,13 +379,35 @@
     .ctx-item.danger{color:#b91c1c;}
     .ctx-item.danger i{color:#b91c1c;}
     .ctx-item.danger:hover{background:#fee2e2;}
+
+    /* Page context menu */
+    .page-context-menu{position:fixed;background:#1f2937;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.4);padding:6px 0;min-width:160px;z-index:5000;display:none;border:1px solid #374151;}
+    .page-context-menu.show{display:block;}
+    .page-ctx-item{padding:8px 12px;font-size:12px;color:#d1d5db;cursor:pointer;display:flex;align-items:center;gap:10px;}
+    .page-ctx-item:hover{background:#374151;}
+    .page-ctx-item i{width:14px;color:#9ca3af;font-size:11px;}
+    .page-ctx-item.danger{color:#ef4444;}
+    .page-ctx-item.danger i{color:#ef4444;}
+    .page-ctx-item.danger:hover{background:#450a0a;}
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Page Navigation (Slim Ribbon Style - Text Only) -->
+    <div class="page-nav" id="pageNav">
+      <div class="page-tab active" data-page="1">
+        <span class="page-number">Page 1</span>
+        <span class="item-count" style="display:none;">0</span>
+      </div>
+      <button class="page-add-btn" id="pageAddBtn" title="Add new page">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+
     <div class="add-panel-wrapper">
       <div class="add-panel" id="addPanel">
         <div class="panel-title"><i class="fas fa-clipboard-list"></i>Clipboard Manager</div>
+        <div class="current-page-indicator" id="currentPageIndicator">📄 Page 1</div>
         <div class="mode-label" id="modeLabel">Mode: Add new</div>
         <div class="edit-info" id="editInfo">Editing Box ID: <span id="editId"></span></div>
 
@@ -153,7 +452,7 @@
         </div>
 
         <div class="hint">
-          Ctrl+Enter to add • Click box to copy & edit • Right-click for menu • Ctrl+Shift+X to clear all • Panel auto-hides after 5s
+          Ctrl+Enter to add • Click box to copy & edit • Right-click for menu • Ctrl+Shift+X to clear current page • Right-click page tabs for options
         </div>
       </div>
 
@@ -166,6 +465,51 @@
       <div class="align-guides" id="alignGuides">
         <div class="guide-line v" id="guideV"></div>
         <div class="guide-line h" id="guideH"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Page Modal -->
+  <div class="modal-overlay" id="addPageModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <i class="fas fa-file-medical"></i>
+        <h2>Create New Page</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Page Name</label>
+          <input type="text" id="pageNameInput" placeholder="e.g. Work, Personal, Projects..." maxlength="20">
+        </div>
+        <div class="form-group">
+          <label>Choose Color</label>
+          <div class="color-picker-wrapper" id="colorPickerWrapper">
+            <div class="color-choice selected" data-color="#e74c3c" style="background:linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)"></div>
+            <div class="color-choice" data-color="#f39c12" style="background:linear-gradient(135deg, #f39c12 0%, #d68910 100%)"></div>
+            <div class="color-choice" data-color="#a4c639" style="background:linear-gradient(135deg, #a4c639 0%, #8ba832 100%)"></div>
+            <div class="color-choice" data-color="#5dade2" style="background:linear-gradient(135deg, #5dade2 0%, #3498db 100%)"></div>
+            <div class="color-choice" data-color="#9b59b6" style="background:linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)"></div>
+            <div class="color-choice" data-color="#1abc9c" style="background:linear-gradient(135deg, #1abc9c 0%, #16a085 100%)"></div>
+            <div class="color-choice" data-color="#e91e63" style="background:linear-gradient(135deg, #e91e63 0%, #c2185b 100%)"></div>
+            <div class="color-choice" data-color="#34495e" style="background:linear-gradient(135deg, #34495e 0%, #2c3e50 100%)"></div>
+            <div class="color-choice" data-color="#ff6b6b" style="background:linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)"></div>
+            <div class="color-choice" data-color="#4ecdc4" style="background:linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)"></div>
+          </div>
+          <div class="custom-color-input">
+            <input type="color" id="modalCustomColor" value="#e74c3c">
+            <span>Or pick custom color</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn cancel" id="modalCancelBtn">
+          <i class="fas fa-times"></i>
+          Cancel
+        </button>
+        <button class="modal-btn create" id="modalCreateBtn">
+          <i class="fas fa-check"></i>
+          Create Page
+        </button>
       </div>
     </div>
   </div>
@@ -193,12 +537,19 @@
     <div class="ctx-item" data-action="back"><i class="fas fa-arrow-down"></i><span>Send to back</span></div>
     <div class="ctx-sep"></div>
     <div class="ctx-item" data-action="changecolor"><i class="fas fa-palette"></i><span>Change color (cycle)</span></div>
+    <div class="ctx-item" data-action="moveto"><i class="fas fa-file-export"></i><span>Move to page...</span></div>
     <div class="ctx-sep"></div>
     <div class="ctx-item danger" data-action="delete"><i class="fas fa-trash"></i><span>Delete</span></div>
   </div>
 
+  <div class="page-context-menu" id="pageContextMenu">
+    <div class="page-ctx-item" data-action="rename"><i class="fas fa-edit"></i><span>Rename page</span></div>
+    <div class="page-ctx-item" data-action="duplicate"><i class="fas fa-copy"></i><span>Duplicate page</span></div>
+    <div class="page-ctx-item danger" data-action="delete"><i class="fas fa-trash"></i><span>Delete page</span></div>
+  </div>
+
   <!-- EMBEDDED DATA (DO NOT MODIFY THIS SECTION MANUALLY) -->
-  <script id="embeddedData" type="application/json">[]</script>
+  <script id="embeddedData" type="application/json">{"pages":[{"id":1,"name":"Page 1","color":"#e74c3c"}],"items":[]}</script>
 
   <script>
   (function(){
@@ -227,8 +578,10 @@
     const editInfo = document.getElementById('editInfo');
     const editIdSpan = document.getElementById('editId');
     const modeLabel = document.getElementById('modeLabel');
+    const currentPageIndicator = document.getElementById('currentPageIndicator');
 
     const contextMenu = document.getElementById('contextMenu');
+    const pageContextMenu = document.getElementById('pageContextMenu');
 
     const alignGuides = document.getElementById('alignGuides');
     const guideV = document.getElementById('guideV');
@@ -241,17 +594,35 @@
     const multiItemsList = document.getElementById('multiItemsList');
     const multiClearBtn = document.getElementById('multiClearBtn');
 
+    const pageNav = document.getElementById('pageNav');
+    const pageAddBtn = document.getElementById('pageAddBtn');
+
+    // Modal elements
+    const addPageModal = document.getElementById('addPageModal');
+    const pageNameInput = document.getElementById('pageNameInput');
+    const colorPickerWrapper = document.getElementById('colorPickerWrapper');
+    const modalCustomColor = document.getElementById('modalCustomColor');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalCreateBtn = document.getElementById('modalCreateBtn');
+
     // State
     const PRESET_COLORS = ['#6366f1','#ec4899','#f59e0b','#10b981','#3b82f6','#8b5cf6'];
 
     let selectedColor = '#6366f1';
     let selectedId = null;
     let contextTargetId = null;
+    let pageContextTargetId = null;
 
     let maxZ = 1000;
 
     let multiCopyActive = false;
     let multiCopyItems = [];
+
+    let pages = [];
+    let items = [];
+    let currentPageId = 1;
+
+    let modalSelectedColor = '#e74c3c';
 
     // Auto-hide
     let autoHideTimer = null;
@@ -308,7 +679,6 @@
       resetAutoHideTimer();
     }
 
-    // Clipboard copy with fallback (works even in file://)
     async function copyText(text){
       const value = String(text ?? '');
       try{
@@ -353,19 +723,26 @@
       return { snapped:best.t, guide:best.t, d:best.d };
     }
 
-    // Load items
-    let items = [];
-    function loadItems(){
-      let embedded = [];
-      try{ embedded = JSON.parse(document.getElementById('embeddedData').textContent || '[]'); }catch(e){ embedded = []; }
+    // Load data
+    function loadData(){
+      let embedded = {pages:[], items:[]};
+      try{ embedded = JSON.parse(document.getElementById('embeddedData').textContent || '{"pages":[],"items":[]}'); }catch(e){}
 
-      let ls = [];
-      try{ ls = JSON.parse(localStorage.getItem('clipboard_layout_items') || '[]'); }catch(e){ ls = []; }
+      let ls = {pages:[], items:[]};
+      try{ ls = JSON.parse(localStorage.getItem('clipboard_v6_data') || '{"pages":[],"items":[]}'); }catch(e){}
 
-      const use = (Array.isArray(embedded) && embedded.length) ? embedded : (Array.isArray(ls) ? ls : []);
+      const usePages = (Array.isArray(embedded.pages) && embedded.pages.length) ? embedded.pages : (Array.isArray(ls.pages) ? ls.pages : []);
+      const useItems = (Array.isArray(embedded.items) && embedded.items.length) ? embedded.items : (Array.isArray(ls.items) ? ls.items : []);
 
-      items = use.map(it => ({
+      pages = usePages.length ? usePages.map(p => ({
+        id: Number(p.id) || Date.now(),
+        name: String(p.name || 'Page'),
+        color: String(p.color || '#e74c3c')
+      })) : [{id:1, name:'Page 1', color:'#e74c3c'}];
+
+      items = useItems.map(it => ({
         id: Number(it.id) || Date.now(),
+        pageId: Number(it.pageId) || 1,
         heading: String(it.heading ?? ''),
         content: String(it.content ?? ''),
         color: String(it.color || '#6366f1'),
@@ -378,9 +755,13 @@
 
       maxZ = 1000;
       for(const it of items){ if(it.z > maxZ) maxZ = it.z; }
+
+      if(!pages.find(p => p.id === currentPageId)) currentPageId = pages[0].id;
     }
 
-    function saveLayout(){ localStorage.setItem('clipboard_layout_items', JSON.stringify(items)); }
+    function saveData(){
+      localStorage.setItem('clipboard_v6_data', JSON.stringify({pages, items}));
+    }
 
     function boardBounds(){
       const r = board.getBoundingClientRect();
@@ -414,9 +795,59 @@
       }
     }
 
+    function getCurrentPageName(){
+      const p = pages.find(x => x.id === currentPageId);
+      return p ? p.name : 'Page';
+    }
+
+    function updatePageIndicator(){
+      currentPageIndicator.textContent = '📄 ' + getCurrentPageName();
+    }
+
+    function lightenColor(hex){
+      const r = parseInt(hex.slice(1,3), 16);
+      const g = parseInt(hex.slice(3,5), 16);
+      const b = parseInt(hex.slice(5,7), 16);
+      const lighter = (c) => Math.min(255, Math.floor(c * 0.85));
+      return `rgb(${lighter(r)}, ${lighter(g)}, ${lighter(b)})`;
+    }
+
+    function renderPageTabs(){
+      const existing = Array.from(pageNav.querySelectorAll('.page-tab'));
+      existing.forEach(el => el.remove());
+
+      for(const p of pages){
+        const tab = document.createElement('div');
+        tab.className = 'page-tab' + (p.id === currentPageId ? ' active' : '');
+        tab.dataset.pageId = String(p.id);
+
+        // Apply custom gradient based on page color
+        const color1 = p.color;
+        const color2 = lightenColor(p.color);
+        tab.style.background = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
+
+        const pageItems = items.filter(it => it.pageId === p.id);
+        const count = pageItems.length;
+
+        // Set item count color to match page theme
+        const countColor = p.color;
+
+        tab.innerHTML = `
+          <span class="page-number">${escapeHtml(p.name)}</span>
+          <span class="item-count" style="display:${count > 0 ? 'block' : 'none'};color:${countColor};">${count}</span>
+        `;
+
+        pageNav.insertBefore(tab, pageAddBtn);
+      }
+
+      updatePageIndicator();
+    }
+
     function render(){
       board.querySelectorAll('.clipboard-item').forEach(el=>el.remove());
-      for(const item of items){
+      const currentItems = items.filter(it => it.pageId === currentPageId);
+
+      for(const item of currentItems){
         const el = document.createElement('div');
         el.className = 'clipboard-item' + (item.id===selectedId ? ' selected' : '');
         el.dataset.id = String(item.id);
@@ -436,6 +867,15 @@
 
         board.appendChild(el);
       }
+
+      renderPageTabs();
+    }
+
+    function switchPage(pageId){
+      currentPageId = pageId;
+      clearSelected();
+      render();
+      notify('Switched to ' + getCurrentPageName(), 'info');
     }
 
     function addItem(heading, content){
@@ -449,6 +889,7 @@
       const id = Date.now();
       const item = {
         id,
+        pageId: currentPageId,
         heading: (String(heading ?? '').trim()) ? String(heading).trim() : c.slice(0, 20),
         content: c,
         color: selectedColor,
@@ -459,12 +900,12 @@
         z: maxZ
       };
       items.push(item);
-      saveLayout();
+      saveData();
       clearSelected();
       headingInput.value = '';
       contentInput.value = '';
       render();
-      notify('Box added', 'success');
+      notify('Box added to ' + getCurrentPageName(), 'success');
       resetAutoHideTimer();
     }
 
@@ -482,7 +923,7 @@
       items[idx].heading = String(headingInput.value ?? '').trim() || items[idx].heading;
       items[idx].content = String(contentInput.value ?? '');
       items[idx].color = selectedColor;
-      saveLayout();
+      saveData();
       render();
       notify('Box updated', 'success');
       resetAutoHideTimer();
@@ -491,7 +932,7 @@
     function deleteItem(id){
       items = items.filter(it => it.id !== id);
       if(selectedId === id) clearSelected();
-      saveLayout();
+      saveData();
       render();
       notify('Item deleted', 'info');
     }
@@ -508,7 +949,7 @@
         z: maxZ
       };
       items.push(copy);
-      saveLayout();
+      saveData();
       render();
       notify('Item duplicated', 'success');
     }
@@ -518,7 +959,7 @@
       if(!it) return;
       maxZ++;
       it.z = maxZ;
-      saveLayout();
+      saveData();
       render();
     }
 
@@ -527,7 +968,7 @@
       if(!it) return;
       const minZ = Math.min(...items.map(x=>x.z||1));
       it.z = minZ - 1;
-      saveLayout();
+      saveData();
       render();
       notify('Sent to back', 'info');
     }
@@ -537,15 +978,40 @@
       if(!it) return;
       const i = PRESET_COLORS.indexOf(it.color);
       it.color = PRESET_COLORS[(i+1+PRESET_COLORS.length) % PRESET_COLORS.length];
-      saveLayout();
+      saveData();
       render();
       notify('Color changed', 'success');
+    }
+
+    function moveItemToPage(itemId){
+      const it = items.find(x => x.id === itemId);
+      if(!it) return;
+
+      const otherPages = pages.filter(p => p.id !== currentPageId);
+      if(!otherPages.length){
+        notify('Create another page first', 'info');
+        return;
+      }
+
+      const names = otherPages.map((p, i) => `${i+1}. ${p.name}`).join('\n');
+      const choice = prompt(`Move to which page?\n\n${names}\n\nEnter number (1-${otherPages.length}):`);
+      if(!choice) return;
+
+      const idx = parseInt(choice) - 1;
+      if(idx < 0 || idx >= otherPages.length){
+        notify('Invalid choice', 'error');
+        return;
+      }
+
+      it.pageId = otherPages[idx].id;
+      saveData();
+      render();
+      notify(`Moved to ${otherPages[idx].name}`, 'success');
     }
 
     function showContextMenu(x,y,id){
       contextTargetId = id;
       contextMenu.classList.add('show');
-      // Keep inside viewport
       const r = contextMenu.getBoundingClientRect();
       const maxX = window.innerWidth - r.width - 10;
       const maxY = window.innerHeight - r.height - 10;
@@ -556,6 +1022,21 @@
     function hideContextMenu(){
       contextMenu.classList.remove('show');
       contextTargetId = null;
+    }
+
+    function showPageContextMenu(x,y,pageId){
+      pageContextTargetId = pageId;
+      pageContextMenu.classList.add('show');
+      const r = pageContextMenu.getBoundingClientRect();
+      const maxX = window.innerWidth - r.width - 10;
+      const maxY = window.innerHeight - r.height - 10;
+      pageContextMenu.style.left = clamp(x, 8, maxX) + 'px';
+      pageContextMenu.style.top = clamp(y, 8, maxY) + 'px';
+    }
+
+    function hidePageContextMenu(){
+      pageContextMenu.classList.remove('show');
+      pageContextTargetId = null;
     }
 
     function renderMultiList(){
@@ -591,30 +1072,166 @@
       resetAutoHideTimer();
     }
 
+    // Modal functions
+    function showAddPageModal(){
+      pageNameInput.value = `Page ${pages.length + 1}`;
+      modalSelectedColor = '#e74c3c';
+      
+      const colorChoices = colorPickerWrapper.querySelectorAll('.color-choice');
+      colorChoices.forEach(c => c.classList.remove('selected'));
+      colorChoices[0].classList.add('selected');
+      
+      modalCustomColor.value = '#e74c3c';
+      
+      addPageModal.classList.add('show');
+      setTimeout(() => pageNameInput.focus(), 100);
+    }
+
+    function hideAddPageModal(){
+      addPageModal.classList.remove('show');
+    }
+
+    function createPageFromModal(){
+      const name = pageNameInput.value.trim() || `Page ${pages.length + 1}`;
+      
+      const id = Date.now();
+      const newPage = {
+        id,
+        name,
+        color: modalSelectedColor
+      };
+
+      pages.push(newPage);
+      saveData();
+      renderPageTabs();
+      hideAddPageModal();
+      notify(`Page "${newPage.name}" created`, 'success');
+    }
+
+    // Modal color picker
+    colorPickerWrapper.addEventListener('click', (e) => {
+      const choice = e.target.closest('.color-choice');
+      if(!choice) return;
+
+      colorPickerWrapper.querySelectorAll('.color-choice').forEach(c => c.classList.remove('selected'));
+      choice.classList.add('selected');
+      modalSelectedColor = choice.dataset.color;
+      modalCustomColor.value = modalSelectedColor;
+    });
+
+    modalCustomColor.addEventListener('input', (e) => {
+      modalSelectedColor = e.target.value;
+      colorPickerWrapper.querySelectorAll('.color-choice').forEach(c => c.classList.remove('selected'));
+    });
+
+    pageAddBtn.addEventListener('click', showAddPageModal);
+    modalCancelBtn.addEventListener('click', hideAddPageModal);
+    modalCreateBtn.addEventListener('click', createPageFromModal);
+
+    // Close modal on overlay click
+    addPageModal.addEventListener('click', (e) => {
+      if(e.target === addPageModal) hideAddPageModal();
+    });
+
+    // Enter key to create
+    pageNameInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') createPageFromModal();
+      if(e.key === 'Escape') hideAddPageModal();
+    });
+
+    function renamePage(pageId){
+      const p = pages.find(x => x.id === pageId);
+      if(!p) return;
+
+      const name = prompt('Rename page:', p.name);
+      if(!name) return;
+
+      p.name = name.trim() || p.name;
+      saveData();
+      renderPageTabs();
+      notify('Page renamed', 'success');
+    }
+
+    function duplicatePage(pageId){
+      const p = pages.find(x => x.id === pageId);
+      if(!p) return;
+
+      const newId = Date.now();
+      const newPage = {
+        id: newId,
+        name: p.name + ' (Copy)',
+        color: p.color
+      };
+
+      pages.push(newPage);
+
+      const pageItems = items.filter(it => it.pageId === pageId);
+      for(const it of pageItems){
+        maxZ++;
+        items.push({
+          ...it,
+          id: Date.now() + Math.random(),
+          pageId: newId,
+          z: maxZ
+        });
+      }
+
+      saveData();
+      renderPageTabs();
+      notify(`Page duplicated with ${pageItems.length} items`, 'success');
+    }
+
+    function deletePage(pageId){
+      if(pages.length <= 1){
+        notify('Cannot delete the last page', 'error');
+        return;
+      }
+
+      const p = pages.find(x => x.id === pageId);
+      if(!p) return;
+
+      const pageItems = items.filter(it => it.pageId === pageId);
+      if(pageItems.length > 0){
+        const confirm = window.confirm(`Delete page "${p.name}" and ${pageItems.length} items?`);
+        if(!confirm) return;
+      }
+
+      pages = pages.filter(x => x.id !== pageId);
+      items = items.filter(it => it.pageId !== pageId);
+
+      if(currentPageId === pageId){
+        currentPageId = pages[0].id;
+      }
+
+      saveData();
+      render();
+      notify('Page deleted', 'info');
+    }
+
     function saveToFile(){
       const parser = new DOMParser();
       const doc = parser.parseFromString(initialHtml, 'text/html');
       const script = doc.getElementById('embeddedData');
       if(script){
-        script.textContent = JSON.stringify(items, null, 2);
+        script.textContent = JSON.stringify({pages, items}, null, 2);
       }
       const finalHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
       const blob = new Blob([finalHtml], {type:'text/html'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'clipboard-manager-' + new Date().toISOString().slice(0,10) + '.html';
+      a.download = 'clipboard-manager-v6-' + new Date().toISOString().slice(0,10) + '.html';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      notify('HTML saved with ' + items.length + ' items', 'success');
+      notify(`Saved ${pages.length} pages, ${items.length} items`, 'success');
       resetAutoHideTimer();
     }
 
-    // ========= Interactions (board) =========
+    // ========= Board Interactions =========
 
-    let pointerMode = null; // 'drag' | 'resize'
+    let pointerMode = null;
     let pointerId = null;
     let start = null;
     let moved = false;
@@ -629,14 +1246,12 @@
 
       const id = Number(itemEl.dataset.id);
 
-      // Delete
       if(e.target.closest('.delete-btn')){
         e.preventDefault();
         deleteItem(id);
         return;
       }
 
-      // Decide mode
       if(e.target.closest('.resize-handle')){
         pointerMode = 'resize';
       }else{
@@ -649,7 +1264,6 @@
       const it = items.find(x=>x.id===id);
       if(!it) return;
 
-      // Bring to front (without extra notify)
       maxZ++;
       it.z = maxZ;
 
@@ -664,7 +1278,6 @@
       };
       moved = false;
 
-      // Select on press
       setSelected(id);
       render();
     });
@@ -681,7 +1294,6 @@
       const b = boardBounds();
 
       if(pointerMode === 'drag'){
-        // Alignment guides + snapping
         hideGuides();
         const threshold = 6;
 
@@ -692,16 +1304,14 @@
         const left = nx, right = nx + w, cx = nx + w/2;
         const top = ny, bottom = ny + h, cy = ny + h/2;
 
-        // targets include board center + other items edges/centers
         const xTargets = [b.w/2];
         const yTargets = [b.h/2];
         for(const other of items){
-          if(other.id === it.id) continue;
+          if(other.id === it.id || other.pageId !== currentPageId) continue;
           xTargets.push(other.x, other.x + other.w/2, other.x + other.w);
           yTargets.push(other.y, other.y + other.h/2, other.y + other.h);
         }
 
-        // snap X using L/C/R best
         const sL = getSnap(left, xTargets, threshold);
         const sC = getSnap(cx, xTargets, threshold);
         const sR = getSnap(right, xTargets, threshold);
@@ -715,7 +1325,6 @@
           showV(bestX.guide);
         }
 
-        // snap Y using T/C/B best
         const sT = getSnap(top, yTargets, threshold);
         const sM = getSnap(cy, yTargets, threshold);
         const sB = getSnap(bottom, yTargets, threshold);
@@ -739,7 +1348,6 @@
         it.h = h;
       }
 
-      // fast update
       const el = board.querySelector(`.clipboard-item[data-id="${start.id}"]`);
       if(el){
         el.style.left = it.x + 'px';
@@ -757,10 +1365,9 @@
       pointerMode = null;
 
       if(it){
-        saveLayout();
+        saveData();
       }
 
-      // If it was a click (not dragged/resized), copy content and show toast near clicked item.
       if(it && !moved){
         const ok = await copyText(it.content || '');
         const el = board.querySelector(`.clipboard-item[data-id="${it.id}"]`);
@@ -775,7 +1382,6 @@
           renderMultiList();
           notify(ok ? 'Added to multi-copy' : 'Added (copy blocked)', ok ? 'success' : 'info');
         }else{
-          // Keep global notification, but main visible feedback is toast near item
           if(!ok) notify('Copy blocked by browser. Use Ctrl+C.', 'info');
         }
       }
@@ -792,17 +1398,44 @@
       showContextMenu(e.clientX, e.clientY, id);
     });
 
+    // Page navigation
+    pageNav.addEventListener('click', (e)=>{
+      const tab = e.target.closest('.page-tab');
+      if(!tab) return;
+
+      const pageId = Number(tab.dataset.pageId);
+      if(pageId !== currentPageId){
+        switchPage(pageId);
+      }
+    });
+
+    pageNav.addEventListener('contextmenu', (e)=>{
+      const tab = e.target.closest('.page-tab');
+      if(!tab) return;
+      e.preventDefault();
+
+      const pageId = Number(tab.dataset.pageId);
+      showPageContextMenu(e.clientX, e.clientY, pageId);
+    });
+
+    // Context menus
     document.addEventListener('mousedown', (e)=>{
-      if(!contextMenu.classList.contains('show')) return;
-      if(e.target.closest('#contextMenu')) return;
-      hideContextMenu();
+      if(contextMenu.classList.contains('show') && !e.target.closest('#contextMenu')){
+        hideContextMenu();
+      }
+      if(pageContextMenu.classList.contains('show') && !e.target.closest('#pageContextMenu')){
+        hidePageContextMenu();
+      }
     });
 
     document.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape') hideContextMenu();
+      if(e.key === 'Escape'){
+        hideContextMenu();
+        hidePageContextMenu();
+        if(addPageModal.classList.contains('show')) hideAddPageModal();
+      }
     });
 
-    // Context menu actions
     contextMenu.addEventListener('click', async (e)=>{
       const item = e.target.closest('.ctx-item');
       if(!item) return;
@@ -830,9 +1463,23 @@
       else if(action === 'front') { bringToFront(id); notify('Brought to front', 'info'); }
       else if(action === 'back') sendToBack(id);
       else if(action === 'changecolor') cycleColor(id);
+      else if(action === 'moveto') moveItemToPage(id);
     });
 
-    // Panel and form events
+    pageContextMenu.addEventListener('click', (e)=>{
+      const item = e.target.closest('.page-ctx-item');
+      if(!item) return;
+      const action = item.dataset.action;
+      const pageId = pageContextTargetId;
+      hidePageContextMenu();
+      if(!pageId) return;
+
+      if(action === 'rename') renamePage(pageId);
+      else if(action === 'duplicate') duplicatePage(pageId);
+      else if(action === 'delete') deletePage(pageId);
+    });
+
+    // Panel interactions
     collapseToggle.addEventListener('click', ()=>{
       const wasCollapsed = addPanel.classList.contains('collapsed');
       addPanel.classList.toggle('collapsed');
@@ -841,7 +1488,6 @@
       else clearTimeout(autoHideTimer);
     });
 
-    // Reset timer on panel interactions
     const panelWrapper = document.querySelector('.add-panel-wrapper');
     ['mousemove','mouseenter','click','keydown','input','change','scroll'].forEach(evt => {
       panelWrapper.addEventListener(evt, resetAutoHideTimer);
@@ -912,22 +1558,23 @@
     });
     multiPanelHeader.addEventListener('pointerup', ()=>{ mpDrag = null; });
 
-    // Clear all shortcut
+    // Clear current page shortcut
     document.addEventListener('keydown', (e)=>{
       if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==='x'){
-        if(!items.length) return;
-        if(confirm(`Delete all ${items.length} items?`)){
-          items = [];
-          saveLayout();
+        const currentItems = items.filter(it => it.pageId === currentPageId);
+        if(!currentItems.length) return;
+        if(confirm(`Delete all ${currentItems.length} items from ${getCurrentPageName()}?`)){
+          items = items.filter(it => it.pageId !== currentPageId);
+          saveData();
           clearSelected();
           render();
-          notify('All items deleted', 'info');
+          notify('Page cleared', 'info');
         }
       }
     });
 
     // Init
-    loadItems();
+    loadData();
     render();
     resetAutoHideTimer();
 
