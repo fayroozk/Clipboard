@@ -1,16 +1,16 @@
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Clipboard Manager (v10 - Easy Save)</title>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clipboard Manager</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;}
     body{background:#f3f4f6;min-height:100vh;}
     .container{display:flex;height:100vh;padding:10px;gap:10px;}
 
-    /* Page navigation bar (NO BACKGROUND - Floating pages with wheel effect) */
+    /* Page navigation bar (Floating pages with wheel effect - No background container) */
     .page-nav{
       width:180px;
       background:transparent;
@@ -194,7 +194,6 @@
     }
     
     .modal-body{margin-bottom:24px;}
-    
     .form-group{margin-bottom:20px;}
     
     .form-group label{
@@ -323,7 +322,7 @@
       transform:translateY(-2px);
     }
 
-    /* Left panel (clipboard manager - auto-hide) */
+    /* Left Panel (Clipboard Manager - Auto Hide) */
     .add-panel-wrapper{position:relative;transition:width .25s;}
     .add-panel{width:270px;background:#fff;border-radius:8px;padding:15px;box-shadow:0 2px 8px rgba(0,0,0,.1);height:100%;display:flex;flex-direction:column;overflow-y:auto;transition:all .25s ease;}
     .add-panel.collapsed{width:0;padding:0;overflow:hidden;box-shadow:none;}
@@ -360,23 +359,95 @@
 
     .hint{margin-top:10px;font-size:.75rem;color:#6b7280;line-height:1.35;}
 
-    /* Board */
-    .board{flex:1;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);position:relative;overflow:hidden;}
+    /* Board Viewport (Big Working Area with Pan & Zoom) */
+    .board{
+      flex:1;
+      background-color:#f8fafc;
+      border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,.1);
+      position:relative;
+      overflow:hidden;
+      cursor:grab;
+      touch-action:none;
+    }
+    .board.panning{cursor:grabbing;}
 
-    .clipboard-item{position:absolute;min-width:100px;min-height:40px;width:140px;height:60px;border-radius:6px;padding:6px 8px;cursor:grab;display:flex;align-items:flex-start;justify-content:flex-start;color:#fff;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.15);user-select:none;}
+    /* Large virtual canvas that pans & scales inside the board viewport */
+    .canvas-layer{
+      position:absolute;
+      top:0;
+      left:0;
+      width:6000px;
+      height:6000px;
+      transform-origin:0 0;
+      background-image:
+        linear-gradient(to right, rgba(203, 213, 225, 0.45) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
+      background-size:16px 16px;
+      will-change:transform;
+    }
+
+    /* Floating zoom control bar */
+    .zoom-bar{position:fixed;right:20px;bottom:20px;display:flex;align-items:center;gap:4px;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.2);padding:5px;z-index:1600;user-select:none;}
+    .zoom-btn{width:32px;height:32px;border:none;border-radius:6px;background:#f3f4f6;color:#111827;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .zoom-btn:hover{background:#e5e7eb;}
+    .zoom-reset{min-width:54px;height:32px;border:none;border-radius:6px;background:#f3f4f6;color:#111827;font-size:12px;font-weight:800;cursor:pointer;padding:0 8px;}
+    .zoom-reset:hover{background:#e5e7eb;}
+
+    .clipboard-item{
+      position:absolute;
+      min-width:100px;
+      min-height:40px;
+      width:140px;
+      height:60px;
+      border-radius:6px;
+      padding:6px 8px;
+      cursor:grab;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      color:#fff;
+      font-size:12px;
+      font-weight:700;
+      box-shadow:0 2px 6px rgba(0,0,0,.15);
+      user-select:none;
+    }
     .clipboard-item:active{cursor:grabbing;}
     .clipboard-item.selected{outline:2px solid #facc15;}
-    .item-heading{max-width:100%;white-space:pre-wrap;word-wrap:break-word;overflow:hidden;line-height:1.3;padding-top:2px;}
-    .resize-handle{position:absolute;width:10px;height:10px;right:2px;bottom:2px;background:rgba(0,0,0,.4);border-radius:2px;cursor:se-resize;}
+    .item-heading{max-width:100%;white-space:pre-wrap;word-wrap:break-word;overflow:hidden;line-height:1.3;padding-top:2px;padding-right:16px;}
+    
+    /* Resize Handle with subtle visual cue */
+    .resize-handle{
+      position:absolute;
+      width:12px;
+      height:12px;
+      right:2px;
+      bottom:2px;
+      background:rgba(0,0,0,.4);
+      border-radius:2px;
+      cursor:se-resize;
+      transition:background .15s;
+    }
+    .resize-handle:hover{
+      background:rgba(0,0,0,.7);
+    }
+
     .delete-btn{position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:50%;border:none;font-size:10px;background:rgba(0,0,0,.4);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .delete-btn:hover{background:rgba(239,68,68,.9);}
     .copy-indicator{position:absolute;left:4px;top:4px;padding:2px 4px;border-radius:3px;background:rgba(16,185,129,.9);color:#fff;font-size:9px;opacity:0;transition:opacity .2s;}
     .clipboard-item.copied .copy-indicator{opacity:1;}
 
-    /* Alignment guides */
+    /* Laser Ruler Alignment Guides (High Visibility for Drag & Dynamic Resize) */
     .align-guides{position:absolute;inset:0;pointer-events:none;z-index:4000;}
-    .guide-line{position:absolute;background:rgba(99,102,241,.85);display:none;}
-    .guide-line.v{width:1px;top:0;bottom:0;}
-    .guide-line.h{height:1px;left:0;right:0;}
+    .guide-line{
+      position:absolute;
+      background:#6366f1;
+      box-shadow:0 0 6px rgba(99,102,241,0.8);
+      display:none;
+      z-index:4500;
+    }
+    .guide-line.v{width:1.5px;top:0;bottom:0;}
+    .guide-line.h{height:1.5px;left:0;right:0;}
     .guide-line.show{display:block;}
 
     /* Notifications */
@@ -386,7 +457,7 @@
     .copy-toast{position:fixed;z-index:6000;pointer-events:none;background:#111827;color:#fff;font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:0;transform:translateY(4px);transition:opacity .12s ease, transform .12s ease;}
     .copy-toast.show{opacity:1;transform:translateY(0);}
 
-    /* Multi copy panel */
+    /* Multi Copy Panel */
     .multi-copy-panel{position:fixed;right:10px;top:50%;transform:translateY(-50%);width:240px;max-height:80vh;background:rgba(255,255,255,.95);border-radius:8px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.15);display:none;flex-direction:column;z-index:1500;border:1px solid #e5e7eb;cursor:move;}
     .multi-copy-panel.active{display:flex;}
     .multi-panel-header{font-size:11px;font-weight:800;color:#111827;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:6px;cursor:move;}
@@ -405,7 +476,7 @@
     .float-multi{background:#10b981;}
     .float-multi.active{background:#ef4444;}
 
-    /* Context menu */
+    /* Context Menus */
     .context-menu{position:fixed;background:#fff;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.25);padding:6px 0;min-width:180px;z-index:5000;display:none;border:1px solid #e5e7eb;}
     .context-menu.show{display:block;}
     .ctx-item{padding:9px 12px;font-size:13px;color:#111827;cursor:pointer;display:flex;align-items:center;gap:10px;}
@@ -431,26 +502,28 @@
   <div class="container">
     <!-- Page Navigation (Floating Wheel Effect - No Background Container) -->
     <div class="page-nav" id="pageNav">
-      <div class="page-tab active" data-page="1" draggable="true">
-        <i class="fas fa-grip-vertical drag-handle"></i>
-        <span class="page-number">Page 1</span>
-        <span class="item-count" style="display:none;">0</span>
-      </div>
-      <button class="page-add-btn" id="pageAddBtn" title="Add new page">
+      
+      <div class="page-tab active" data-page-id="1" draggable="true" style="background: linear-gradient(135deg, rgb(231, 76, 60) 0%, rgb(196, 64, 51) 100%);">
+          <i class="fas fa-grip-vertical drag-handle"></i>
+          <span class="page-number">Packet tracer</span>
+          <span class="item-count" style="display:block;color:#e74c3c;">6</span>
+        </div><button class="page-add-btn" id="pageAddBtn" title="Add new page">
         <i class="fas fa-plus"></i>
       </button>
     </div>
 
+    <!-- Control Panel -->
     <div class="add-panel-wrapper">
-      <div class="add-panel" id="addPanel">
-        <div class="panel-title"><i class="fas fa-clipboard-list"></i>Clipboard Manager</div>
-        <div class="current-page-indicator" id="currentPageIndicator">📄 Page 1</div>
-        <div class="mode-label" id="modeLabel">Mode: Add new</div>
-        <div class="edit-info" id="editInfo">Editing Box ID: <span id="editId"></span></div>
+      <div class="add-panel collapsed" id="addPanel">
+        <div class="panel-title"><i class="fas fa-clipboard-list" style="color:#6366f1;"></i>Clipboard Manager</div>
+        <div class="current-page-indicator" id="currentPageIndicator">📄 Packet tracer</div>
+        <div class="mode-label" id="modeLabel">Mode: Edit selected</div>
+        <div class="edit-info" id="editInfo" style="display: block;">Editing Box ID: <span id="editId">1785829327426</span></div>
 
         <label>Heading (optional - shown on box)</label>
         <div class="resizable-input-wrapper">
-          <textarea id="headingInput" rows="2" placeholder="e.g. Email Address\nCan add multiple lines"></textarea>
+          <textarea id="headingInput" rows="2" placeholder="e.g. Email Address
+Can add multiple lines"></textarea>
           <i class="fas fa-grip-lines-vertical resize-icon"></i>
         </div>
 
@@ -462,10 +535,10 @@
 
         <label>Pick Color</label>
         <div class="color-options" id="colorOptions">
-          <div class="color-option selected" data-color="#6366f1" style="background:#6366f1"></div>
+          <div class="color-option" data-color="#6366f1" style="background:#6366f1"></div>
           <div class="color-option" data-color="#ec4899" style="background:#ec4899"></div>
           <div class="color-option" data-color="#f59e0b" style="background:#f59e0b"></div>
-          <div class="color-option" data-color="#10b981" style="background:#10b981"></div>
+          <div class="color-option selected" data-color="#10b981" style="background:#10b981"></div>
           <div class="color-option" data-color="#3b82f6" style="background:#3b82f6"></div>
           <div class="color-option" data-color="#8b5cf6" style="background:#8b5cf6"></div>
         </div>
@@ -476,7 +549,7 @@
         </div>
 
         <button class="btn" id="addBtn"><i class="fas fa-plus"></i>Add new box</button>
-        <button class="btn secondary" id="updateBtn" disabled><i class="fas fa-pen"></i>Update selected box</button>
+        <button class="btn secondary" id="updateBtn"><i class="fas fa-pen"></i>Update selected box</button>
         <button class="btn save" id="saveFileBtn"><i class="fas fa-download"></i>Download HTML</button>
         <button class="btn multi-toggle-btn" id="multiCopyBtn"><i class="fas fa-layer-group"></i>Multi Copy</button>
 
@@ -489,7 +562,7 @@
         </div>
 
         <div class="hint">
-          💡 Tip: Save downloads as "clipboard-manager.html" and replace when asked. Auto-saves to localStorage. • Ctrl+Enter to add • Click box to copy • Drag pages to reorder
+          💡 Tip: Save as "clipboard-manager.html". Auto-saves to browser storage. • Ctrl+Enter to add • Click box to copy • Drag handles to dynamically resize with ruler alignment!
         </div>
       </div>
 
@@ -498,12 +571,51 @@
       </div>
     </div>
 
+    <!-- Main Canvas Board (Grid Pattern) -->
     <div class="board" id="board">
+      <div class="canvas-layer" id="canvasLayer">
       <div class="align-guides" id="alignGuides">
-        <div class="guide-line v" id="guideV"></div>
-        <div class="guide-line h" id="guideH"></div>
+        <div class="guide-line v" id="guideV" style="left: 896.8px;"></div>
+        <div class="guide-line h" id="guideH" style="top: 341.6px;"></div>
       </div>
-    </div>
+    <div class="clipboard-item" data-id="1785767964228" style="left: 697.2px; top: 124.8px; width: 179.2px; height: 106.4px; background-color: rgb(16, 185, 129); z-index: 1151;">
+          <div class="copy-indicator">Copied</div>
+          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
+          <div class="item-heading">switchport mode access<br> switchport access vlan 1000<br> no shutdown<br> exit<br>Do wr</div>
+          <div class="resize-handle" title="Resize &amp; Align"></div>
+        </div><div class="clipboard-item" data-id="1785769043614" style="left: 697.2px; top: 249.1px; width: 180px; height: 106.4px; background-color: rgb(213, 83, 83); z-index: 1152;">
+          <div class="copy-indicator">Copied</div>
+          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
+          <div class="item-heading">no switchport mode access<br> no switchport access vlan 1000<br> no shutdown<br> exit</div>
+          <div class="resize-handle" title="Resize &amp; Align"></div>
+        </div><div class="clipboard-item" data-id="1785827975370" style="left: 697.2px; top: 7.59999px; width: 175.2px; height: 40px; background-color: rgb(59, 130, 246); z-index: 1132;">
+          <div class="copy-indicator">Copied</div>
+          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
+          <div class="item-heading">config t</div>
+          <div class="resize-handle" title="Resize &amp; Align"></div>
+        </div><div class="clipboard-item" data-id="1785828542746" style="left: 896.8px; top: 47.6px; width: 200px; height: 40px; background-color: rgb(139, 92, 246); z-index: 1105;">
+          <div class="copy-indicator">Copied</div>
+          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
+          <div class="item-heading">interface GigabitEthernet0/1</div>
+          <div class="resize-handle" title="Resize &amp; Align"></div>
+        </div><div class="clipboard-item" data-id="1785829141562" style="left: 896.8px; top: 104.8px; width: 200px; height: 40px; background-color: rgb(139, 92, 246); z-index: 1133;">
+          <div class="copy-indicator">Copied</div>
+          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
+          <div class="item-heading">interface Fa0/1</div>
+          <div class="resize-handle" title="Resize &amp; Align"></div>
+        </div><div class="clipboard-item selected" data-id="1785829327426" style="left: 826.8px; top: 405.5px; width: 140px; height: 60px; background-color: rgb(16, 185, 129); z-index: 1153;">
+          <div class="copy-indicator">Copied</div>
+          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
+          <div class="item-heading">save memory <br>do wr <br>wr</div>
+          <div class="resize-handle" title="Resize &amp; Align"></div>
+        </div></div>
+      </div>
+  </div>
+
+  <div class="zoom-bar" id="zoomBar">
+    <button class="zoom-btn" id="zoomOutBtn" title="Zoom out">−</button>
+    <button class="zoom-reset" id="zoomResetBtn" title="Reset to 100%">100%</button>
+    <button class="zoom-btn" id="zoomInBtn" title="Zoom in">+</button>
   </div>
 
   <!-- Add Page Modal -->
@@ -540,19 +652,17 @@
       </div>
       <div class="modal-footer">
         <button class="modal-btn cancel" id="modalCancelBtn">
-          <i class="fas fa-times"></i>
-          Cancel
+          <i class="fas fa-times"></i> Cancel
         </button>
         <button class="modal-btn create" id="modalCreateBtn">
-          <i class="fas fa-check"></i>
-          Create Page
+          <i class="fas fa-check"></i> Create Page
         </button>
       </div>
     </div>
   </div>
 
-  <div class="notification" id="notification">Ready</div>
-  <div class="copy-toast" id="copyToast">Copied</div>
+  <div class="notification" id="notification" style="background: rgb(59, 130, 246);">Item deleted</div>
+  <div class="copy-toast" id="copyToast" style="left: 914.4px; top: 350px;">Copied</div>
 
   <div class="floating-buttons">
     <button class="float-btn float-save" id="saveFloatToggle" title="Download HTML File"><i class="fas fa-download"></i></button>
@@ -565,7 +675,7 @@
     <button class="multi-clear-btn" id="multiClearBtn">Clear All</button>
   </div>
 
-  <div class="context-menu" id="contextMenu">
+  <div class="context-menu" id="contextMenu" style="left: 664px; top: 151px;">
     <div class="ctx-item" data-action="copy"><i class="fas fa-copy"></i><span>Copy content</span></div>
     <div class="ctx-item" data-action="edit"><i class="fas fa-pen"></i><span>Edit (select)</span></div>
     <div class="ctx-item" data-action="duplicate"><i class="fas fa-clone"></i><span>Duplicate</span></div>
@@ -573,7 +683,7 @@
     <div class="ctx-item" data-action="front"><i class="fas fa-arrow-up"></i><span>Bring to front</span></div>
     <div class="ctx-item" data-action="back"><i class="fas fa-arrow-down"></i><span>Send to back</span></div>
     <div class="ctx-sep"></div>
-    <div class="ctx-item" data-action="changecolor"><i class="fas fa-palette"></i><span>Change color (cycle)</span></div>
+    <div class="ctx-item" data-action="changecolor"><i class="fas fa-palette"></i><span>Change color</span></div>
     <div class="ctx-item" data-action="moveto"><i class="fas fa-file-export"></i><span>Move to page...</span></div>
     <div class="ctx-sep"></div>
     <div class="ctx-item danger" data-action="delete"><i class="fas fa-trash"></i><span>Delete</span></div>
@@ -585,8 +695,90 @@
     <div class="page-ctx-item danger" data-action="delete"><i class="fas fa-trash"></i><span>Delete page</span></div>
   </div>
 
-  <!-- EMBEDDED DATA (DO NOT MODIFY THIS SECTION MANUALLY) -->
-  <script id="embeddedData" type="application/json">{"pages":[{"id":1,"name":"Page 1","color":"#e74c3c"}],"items":[]}</script>
+  <!-- EMBEDDED DATA -->
+  <script id="embeddedData" type="application/json">{
+  "pages": [
+    {
+      "id": 1,
+      "name": "Packet tracer",
+      "color": "#e74c3c"
+    }
+  ],
+  "items": [
+    {
+      "id": 1785767964228,
+      "pageId": 1,
+      "heading": "switchport mode access\n switchport access vlan 1000\n no shutdown\n exit\nDo wr",
+      "content": "switchport mode access\n switchport access vlan 1000\n no shutdown\n exit\ndo wr \n",
+      "color": "#10b981",
+      "x": 697.2000732421875,
+      "y": 124.80001068115234,
+      "w": 179.20001220703125,
+      "h": 106.40005493164062,
+      "z": 1151
+    },
+    {
+      "id": 1785769043614,
+      "pageId": 1,
+      "heading": "no switchport mode access\n no switchport access vlan 1000\n no shutdown\n exit",
+      "content": "no switchport mode access\nno switchport access vlan 1000\nno shutdown\nexit\nDo wr",
+      "color": "#d55353",
+      "x": 697.2000732421875,
+      "y": 249.09991455078125,
+      "w": 180.00003051757812,
+      "h": 106.40010070800781,
+      "z": 1152
+    },
+    {
+      "id": 1785827975370,
+      "pageId": 1,
+      "heading": "config t",
+      "content": "config t\n",
+      "color": "#3b82f6",
+      "x": 697.2000732421875,
+      "y": 7.5999908447265625,
+      "w": 175.199951171875,
+      "h": 40,
+      "z": 1132
+    },
+    {
+      "id": 1785828542746,
+      "pageId": 1,
+      "heading": "interface GigabitEthernet0/1",
+      "content": "interface GigabitEthernet0/1",
+      "color": "#8b5cf6",
+      "x": 896.7999267578125,
+      "y": 47.59999084472656,
+      "w": 200,
+      "h": 40,
+      "z": 1105
+    },
+    {
+      "id": 1785829141562,
+      "pageId": 1,
+      "heading": "interface Fa0/1",
+      "content": "interface Fa0/1",
+      "color": "#8b5cf6",
+      "x": 896.7999267578125,
+      "y": 104.80001068115234,
+      "w": 200,
+      "h": 40,
+      "z": 1133
+    },
+    {
+      "id": 1785829327426,
+      "pageId": 1,
+      "heading": "save memory \ndo wr \nwr",
+      "content": "do wr\nwr\nsave memory\n",
+      "color": "#10b981",
+      "x": 826.7999267578125,
+      "y": 405.5,
+      "w": 140,
+      "h": 60,
+      "z": 1153
+    }
+  ]
+}</script>
 
   <script>
   (function(){
@@ -594,6 +786,10 @@
 
     // Elements
     const board = document.getElementById('board');
+    const canvasLayer = document.getElementById('canvasLayer');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const zoomResetBtn = document.getElementById('zoomResetBtn');
     const headingInput = document.getElementById('headingInput');
     const contentInput = document.getElementById('contentInput');
     const addBtn = document.getElementById('addBtn');
@@ -665,11 +861,18 @@
     let draggedPageId = null;
     let dragOverPageId = null;
 
+    // Pan & Zoom state (big virtual working area)
+    const CANVAS_SIZE = 6000;
+    const ZOOM_MIN = 0.2, ZOOM_MAX = 4;
+    let panX = 0, panY = 0, zoomScale = 1;
+    let isPanning = false;
+    let panStart = null;
+
     // Auto-hide
     let autoHideTimer = null;
     const AUTO_HIDE_MS = 5000;
 
-    // Capture initial HTML for stable save
+    // Capture initial HTML template for clean self-embedded output
     const initialHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 
     function notify(msg, type='success'){
@@ -764,7 +967,7 @@
       return { snapped:best.t, guide:best.t, d:best.d };
     }
 
-    // Load data
+    // Load Data
     function loadData(){
       let embedded = {pages:[], items:[]};
       try{ embedded = JSON.parse(document.getElementById('embeddedData').textContent || '{"pages":[],"items":[]}'); }catch(e){}
@@ -772,8 +975,8 @@
       let ls = {pages:[], items:[]};
       try{ ls = JSON.parse(localStorage.getItem('clipboard_v10_data') || '{"pages":[],"items":[]}'); }catch(e){}
 
-      const usePages = (Array.isArray(embedded.pages) && embedded.pages.length) ? embedded.pages : (Array.isArray(ls.pages) ? ls.pages : []);
-      const useItems = (Array.isArray(embedded.items) && embedded.items.length) ? embedded.items : (Array.isArray(ls.items) ? ls.items : []);
+      const usePages = (Array.isArray(ls.pages) && ls.pages.length) ? ls.pages : ((Array.isArray(embedded.pages) && embedded.pages.length) ? embedded.pages : []);
+      const useItems = (Array.isArray(ls.items) && ls.items.length) ? ls.items : ((Array.isArray(embedded.items) && embedded.items.length) ? embedded.items : []);
 
       pages = usePages.length ? usePages.map(p => ({
         id: Number(p.id) || Date.now(),
@@ -805,8 +1008,55 @@
     }
 
     function boardBounds(){
+      // The virtual canvas is much bigger than the visible viewport so there's
+      // plenty of room to place and drag boxes around.
+      return { w: CANVAS_SIZE, h: CANVAS_SIZE };
+    }
+
+    // Visible portion of the canvas (in canvas coordinates), accounting for pan/zoom
+    function visibleCanvasRect(){
       const r = board.getBoundingClientRect();
-      return { w: r.width, h: r.height };
+      return {
+        x: -panX / zoomScale,
+        y: -panY / zoomScale,
+        w: r.width / zoomScale,
+        h: r.height / zoomScale
+      };
+    }
+
+    function applyTransform(){
+      canvasLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+    }
+
+    function updateZoomLabel(){
+      zoomResetBtn.textContent = Math.round(zoomScale * 100) + '%';
+    }
+
+    // Zoom, keeping the canvas point under (clientX, clientY) fixed on screen.
+    // Defaults to the center of the viewport when no pivot point is given.
+    function setZoom(newScale, clientX, clientY){
+      newScale = clamp(newScale, ZOOM_MIN, ZOOM_MAX);
+      const r = board.getBoundingClientRect();
+      const px = (clientX != null) ? clientX - r.left : r.width / 2;
+      const py = (clientY != null) ? clientY - r.top : r.height / 2;
+
+      const cx = (px - panX) / zoomScale;
+      const cy = (py - panY) / zoomScale;
+
+      zoomScale = newScale;
+      panX = px - cx * zoomScale;
+      panY = py - cy * zoomScale;
+
+      applyTransform();
+      updateZoomLabel();
+    }
+
+    function resetZoom(){
+      zoomScale = 1;
+      panX = 0;
+      panY = 0;
+      applyTransform();
+      updateZoomLabel();
     }
 
     function clearSelected(){
@@ -846,9 +1096,9 @@
     }
 
     function lightenColor(hex){
-      const r = parseInt(hex.slice(1,3), 16);
-      const g = parseInt(hex.slice(3,5), 16);
-      const b = parseInt(hex.slice(5,7), 16);
+      const r = parseInt(hex.slice(1,3), 16) || 200;
+      const g = parseInt(hex.slice(3,5), 16) || 100;
+      const b = parseInt(hex.slice(5,7), 16) || 100;
       const lighter = (c) => Math.min(255, Math.floor(c * 0.85));
       return `rgb(${lighter(r)}, ${lighter(g)}, ${lighter(b)})`;
     }
@@ -863,7 +1113,6 @@
         tab.dataset.pageId = String(p.id);
         tab.setAttribute('draggable', 'true');
 
-        // Apply custom gradient based on page color
         const color1 = p.color;
         const color2 = lightenColor(p.color);
         tab.style.background = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
@@ -871,13 +1120,10 @@
         const pageItems = items.filter(it => it.pageId === p.id);
         const count = pageItems.length;
 
-        // Set item count color to match page theme
-        const countColor = p.color;
-
         tab.innerHTML = `
           <i class="fas fa-grip-vertical drag-handle"></i>
           <span class="page-number">${escapeHtml(p.name)}</span>
-          <span class="item-count" style="display:${count > 0 ? 'block' : 'none'};color:${countColor};">${count}</span>
+          <span class="item-count" style="display:${count > 0 ? 'block' : 'none'};color:${p.color};">${count}</span>
         `;
 
         pageNav.insertBefore(tab, pageAddBtn);
@@ -887,10 +1133,9 @@
       attachPageDragListeners();
     }
 
-    // Drag-and-drop handlers for pages
+    // Drag-and-drop handlers for page tabs
     function attachPageDragListeners(){
       const tabs = pageNav.querySelectorAll('.page-tab');
-      
       tabs.forEach(tab => {
         tab.addEventListener('dragstart', handlePageDragStart);
         tab.addEventListener('dragend', handlePageDragEnd);
@@ -909,26 +1154,20 @@
 
     function handlePageDragEnd(e){
       e.currentTarget.classList.remove('dragging');
-      
-      // Remove all drag-over classes
       const tabs = pageNav.querySelectorAll('.page-tab');
       tabs.forEach(tab => tab.classList.remove('drag-over'));
-      
       draggedPageId = null;
       dragOverPageId = null;
     }
 
     function handlePageDragOver(e){
       if(e.preventDefault) e.preventDefault();
-      
       const targetPageId = Number(e.currentTarget.dataset.pageId);
-      
       if(draggedPageId && draggedPageId !== targetPageId){
         e.dataTransfer.dropEffect = 'move';
         e.currentTarget.classList.add('drag-over');
         dragOverPageId = targetPageId;
       }
-      
       return false;
     }
 
@@ -939,28 +1178,19 @@
     function handlePageDrop(e){
       if(e.stopPropagation) e.stopPropagation();
       e.preventDefault();
-      
       const targetPageId = Number(e.currentTarget.dataset.pageId);
-      
       if(draggedPageId && targetPageId && draggedPageId !== targetPageId){
-        // Find indices
         const draggedIdx = pages.findIndex(p => p.id === draggedPageId);
         const targetIdx = pages.findIndex(p => p.id === targetPageId);
-        
         if(draggedIdx !== -1 && targetIdx !== -1){
-          // Remove dragged page
           const [draggedPage] = pages.splice(draggedIdx, 1);
-          
-          // Insert at new position
           const newTargetIdx = pages.findIndex(p => p.id === targetPageId);
           pages.splice(newTargetIdx, 0, draggedPage);
-          
           saveData();
           renderPageTabs();
           notify('Page order updated', 'success');
         }
       }
-      
       return false;
     }
 
@@ -983,10 +1213,10 @@
           <div class="copy-indicator">Copied</div>
           <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
           <div class="item-heading">${escapeHtml(item.heading).replace(/\n/g,'<br>')}</div>
-          <div class="resize-handle" title="Resize"></div>
+          <div class="resize-handle" title="Resize & Align"></div>
         `;
 
-        board.appendChild(el);
+        canvasLayer.appendChild(el);
       }
 
       renderPageTabs();
@@ -1006,6 +1236,7 @@
         return;
       }
       const b = boardBounds();
+      const vr = visibleCanvasRect();
       maxZ++;
       const id = Date.now();
       const item = {
@@ -1014,8 +1245,8 @@
         heading: (String(heading ?? '').trim()) ? String(heading).trim() : c.slice(0, 20),
         content: c,
         color: selectedColor,
-        x: clamp(20 + (items.length*10) % Math.max(b.w-160,160), 0, Math.max(0,b.w-100)),
-        y: clamp(20 + (items.length*10) % 140, 0, Math.max(0,b.h-40)),
+        x: clamp(vr.x + 20 + (items.length*15) % Math.max(vr.w-160,160), 0, Math.max(0,b.w-100)),
+        y: clamp(vr.y + 20 + (items.length*15) % 140, 0, Math.max(0,b.h-40)),
         w: 140,
         h: 60,
         z: maxZ
@@ -1249,12 +1480,10 @@
     modalCancelBtn.addEventListener('click', hideAddPageModal);
     modalCreateBtn.addEventListener('click', createPageFromModal);
 
-    // Close modal on overlay click
     addPageModal.addEventListener('click', (e) => {
       if(e.target === addPageModal) hideAddPageModal();
     });
 
-    // Enter key to create
     pageNameInput.addEventListener('keydown', (e) => {
       if(e.key === 'Enter') createPageFromModal();
       if(e.key === 'Escape') hideAddPageModal();
@@ -1330,30 +1559,27 @@
     }
 
     function saveToFile(){
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(initialHtml, 'text/html');
-      const script = doc.getElementById('embeddedData');
-      if(script){
-        script.textContent = JSON.stringify({pages, items}, null, 2);
+      const embeddedDataScript = document.getElementById('embeddedData');
+      if(embeddedDataScript){
+        embeddedDataScript.textContent = JSON.stringify({pages, items}, null, 2);
       }
-      const finalHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
-      const blob = new Blob([finalHtml], {type:'text/html'});
+      
+      const docHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([docHtml], {type:'text/html'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      
-      // Fixed filename - always use same name for easy replacement
       a.download = 'clipboard-manager.html';
       
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      notify(`Downloaded! Save as "clipboard-manager.html" and replace when asked`, 'success');
+      notify(`Downloaded clipboard-manager.html!`, 'success');
       resetAutoHideTimer();
     }
 
-    // ========= Board Interactions =========
+    // ========= Board Interactions (Drag & Dynamic Resize Alignment) =========
 
     let pointerMode = null;
     let pointerId = null;
@@ -1366,7 +1592,16 @@
 
     board.addEventListener('pointerdown', (e)=>{
       const itemEl = findItemEl(e.target);
-      if(!itemEl) return;
+
+      if(!itemEl){
+        // Clicked/dragged on empty canvas area -> pan the whole working area
+        if(e.button !== 0 && e.pointerType === 'mouse') return;
+        isPanning = true;
+        panStart = { x: e.clientX, y: e.clientY, panX, panY };
+        board.setPointerCapture(e.pointerId);
+        board.classList.add('panning');
+        return;
+      }
 
       const id = Number(itemEl.dataset.id);
 
@@ -1407,19 +1642,26 @@
     });
 
     board.addEventListener('pointermove', (e)=>{
+      if(isPanning && panStart){
+        panX = panStart.panX + (e.clientX - panStart.x);
+        panY = panStart.panY + (e.clientY - panStart.y);
+        applyTransform();
+        return;
+      }
+
       if(pointerId==null || e.pointerId !== pointerId || !start) return;
       const it = items.find(x=>x.id===start.id);
       if(!it) return;
 
-      const dx = e.clientX - start.startX;
-      const dy = e.clientY - start.startY;
+      const dx = (e.clientX - start.startX) / zoomScale;
+      const dy = (e.clientY - start.startY) / zoomScale;
       if(Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
 
       const b = boardBounds();
+      const threshold = 8;
 
       if(pointerMode === 'drag'){
         hideGuides();
-        const threshold = 6;
 
         let nx = clamp(start.x + dx, 0, Math.max(0, b.w - it.w));
         let ny = clamp(start.y + dy, 0, Math.max(0, b.h - it.h));
@@ -1465,9 +1707,38 @@
         it.x = nx;
         it.y = ny;
 
-      }else if(pointerMode === 'resize'){
-        const w = Math.max(100, start.w + dx);
-        const h = Math.max(40, start.h + dy);
+      } else if(pointerMode === 'resize'){
+        hideGuides();
+
+        let w = Math.max(100, start.w + dx);
+        let h = Math.max(40, start.h + dy);
+
+        const rightEdge = start.x + w;
+        const bottomEdge = start.y + h;
+
+        const xTargets = [b.w/2, b.w];
+        const yTargets = [b.h/2, b.h];
+
+        for(const other of items){
+          if(other.id === it.id || other.pageId !== currentPageId) continue;
+          xTargets.push(other.x, other.x + other.w/2, other.x + other.w);
+          yTargets.push(other.y, other.y + other.h/2, other.y + other.h);
+        }
+
+        // Align right edge during resize
+        const sR = getSnap(rightEdge, xTargets, threshold);
+        if(sR.guide != null){
+          w = Math.max(100, sR.snapped - start.x);
+          showV(sR.guide);
+        }
+
+        // Align bottom edge during resize
+        const sB = getSnap(bottomEdge, yTargets, threshold);
+        if(sB.guide != null){
+          h = Math.max(40, sB.snapped - start.y);
+          showH(sB.guide);
+        }
+
         it.w = w;
         it.h = h;
       }
@@ -1482,6 +1753,14 @@
     });
 
     board.addEventListener('pointerup', async (e)=>{
+      if(isPanning){
+        isPanning = false;
+        panStart = null;
+        board.classList.remove('panning');
+        try{ board.releasePointerCapture(e.pointerId); }catch(err){}
+        return;
+      }
+
       if(pointerId==null || e.pointerId !== pointerId || !start) return;
 
       const it = items.find(x=>x.id===start.id);
@@ -1522,6 +1801,18 @@
       showContextMenu(e.clientX, e.clientY, id);
     });
 
+    // Scroll wheel zoom (no Ctrl needed) - zooms toward the cursor position
+    board.addEventListener('wheel', (e)=>{
+      e.preventDefault();
+      const zoomIntensity = 0.0015;
+      const newScale = zoomScale * Math.exp(-e.deltaY * zoomIntensity);
+      setZoom(newScale, e.clientX, e.clientY);
+    }, { passive:false });
+
+    zoomInBtn.addEventListener('click', ()=> setZoom(zoomScale * 1.2));
+    zoomOutBtn.addEventListener('click', ()=> setZoom(zoomScale / 1.2));
+    zoomResetBtn.addEventListener('click', resetZoom);
+
     // Page navigation
     pageNav.addEventListener('click', (e)=>{
       const tab = e.target.closest('.page-tab');
@@ -1542,7 +1833,7 @@
       showPageContextMenu(e.clientX, e.clientY, pageId);
     });
 
-    // Context menus
+    // Context menus dismissal
     document.addEventListener('mousedown', (e)=>{
       if(contextMenu.classList.contains('show') && !e.target.closest('#contextMenu')){
         hideContextMenu();
@@ -1700,9 +1991,12 @@
     // Init
     loadData();
     render();
+    applyTransform();
+    updateZoomLabel();
     resetAutoHideTimer();
 
   })();
   </script>
-</body>
-</html>
+
+
+</body></html>
