@@ -518,6 +518,10 @@
           <i class="fas fa-grip-vertical drag-handle"></i>
           <span class="page-number">Packet tracer</span>
           <span class="item-count" style="display:block;color:#e74c3c;">6</span>
+        </div><div class="page-tab" data-page-id="1785832097760" draggable="true" style="background: linear-gradient(135deg, rgb(78, 205, 196) 0%, rgb(66, 174, 166) 100%);">
+          <i class="fas fa-grip-vertical drag-handle"></i>
+          <span class="page-number">set up test</span>
+          <span class="item-count" style="display:none;color:#4ecdc4;">0</span>
         </div><button class="page-add-btn" id="pageAddBtn" title="Add new page">
         <i class="fas fa-plus"></i>
       </button>
@@ -561,7 +565,7 @@ Can add multiple lines"></textarea>
 
         <button class="btn" id="addBtn"><i class="fas fa-plus"></i>Add new box</button>
         <button class="btn secondary" id="updateBtn"><i class="fas fa-pen"></i>Update selected box</button>
-        <button class="btn save" id="saveFileBtn"><i class="fas fa-download"></i>Download HTML</button>
+        <button class="btn save" id="saveFileBtn"><i class="fas fa-save"></i>Save File</button>
         <button class="btn multi-toggle-btn" id="multiCopyBtn"><i class="fas fa-layer-group"></i>Multi Copy</button>
 
         <div class="mode-label" style="margin-top:8px;">Quick Actions</div>
@@ -573,7 +577,7 @@ Can add multiple lines"></textarea>
         </div>
 
         <div class="hint">
-          💡 Tip: Save as "clipboard-manager.html". Auto-saves to browser storage. • Ctrl+Enter to add • Click box to copy • Drag handles to dynamically resize with ruler alignment!
+          💡 Tip: "Save File" writes straight back to your file if your browser supports it, otherwise it downloads a fresh copy. Each file keeps its own separate edits. • Ctrl+Enter to add • Click box to copy • Drag handles to dynamically resize with ruler alignment!
         </div>
       </div>
 
@@ -584,8 +588,8 @@ Can add multiple lines"></textarea>
 
     <!-- Main Canvas Board (Grid Pattern) -->
     <div class="board" id="board">
-      <div class="grid-bg" id="gridBg"></div>
-      <div class="canvas-layer" id="canvasLayer">
+      <div class="grid-bg" id="gridBg" style="background-size: 16px 16px; background-position: -5.60004px 40.8px;"></div>
+      <div class="canvas-layer" id="canvasLayer" style="transform: translate(-5.60004px, 40.8px) scale(1);">
       <div class="align-guides" id="alignGuides">
         <div class="guide-line v" id="guideV" style="left: 896.8px;"></div>
         <div class="guide-line h" id="guideH" style="top: 341.6px;"></div>
@@ -615,7 +619,7 @@ Can add multiple lines"></textarea>
           <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
           <div class="item-heading">interface Fa0/1</div>
           <div class="resize-handle" title="Resize &amp; Align"></div>
-        </div><div class="clipboard-item selected" data-id="1785829327426" style="left: 826.8px; top: 405.5px; width: 140px; height: 60px; background-color: rgb(16, 185, 129); z-index: 1153;">
+        </div><div class="clipboard-item" data-id="1785829327426" style="left: 826.8px; top: 405.5px; width: 140px; height: 60px; background-color: rgb(16, 185, 129); z-index: 1153;">
           <div class="copy-indicator">Copied</div>
           <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
           <div class="item-heading">save memory <br>do wr <br>wr</div>
@@ -645,7 +649,7 @@ Can add multiple lines"></textarea>
         <div class="form-group">
           <label>Choose Color</label>
           <div class="color-picker-wrapper" id="colorPickerWrapper">
-            <div class="color-choice selected" data-color="#e74c3c" style="background:linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)"></div>
+            <div class="color-choice" data-color="#e74c3c" style="background:linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)"></div>
             <div class="color-choice" data-color="#f39c12" style="background:linear-gradient(135deg, #f39c12 0%, #d68910 100%)"></div>
             <div class="color-choice" data-color="#a4c639" style="background:linear-gradient(135deg, #a4c639 0%, #8ba832 100%)"></div>
             <div class="color-choice" data-color="#5dade2" style="background:linear-gradient(135deg, #5dade2 0%, #3498db 100%)"></div>
@@ -654,7 +658,7 @@ Can add multiple lines"></textarea>
             <div class="color-choice" data-color="#e91e63" style="background:linear-gradient(135deg, #e91e63 0%, #c2185b 100%)"></div>
             <div class="color-choice" data-color="#34495e" style="background:linear-gradient(135deg, #34495e 0%, #2c3e50 100%)"></div>
             <div class="color-choice" data-color="#ff6b6b" style="background:linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)"></div>
-            <div class="color-choice" data-color="#4ecdc4" style="background:linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)"></div>
+            <div class="color-choice selected" data-color="#4ecdc4" style="background:linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)"></div>
           </div>
           <div class="custom-color-input">
             <input type="color" id="modalCustomColor" value="#e74c3c">
@@ -673,11 +677,11 @@ Can add multiple lines"></textarea>
     </div>
   </div>
 
-  <div class="notification" id="notification" style="background: rgb(59, 130, 246);">Item deleted</div>
+  <div class="notification" id="notification" style="background: rgb(16, 185, 129);">Page "set up test" created</div>
   <div class="copy-toast" id="copyToast" style="left: 914.4px; top: 350px;">Copied</div>
 
   <div class="floating-buttons">
-    <button class="float-btn float-save" id="saveFloatToggle" title="Download HTML File"><i class="fas fa-download"></i></button>
+    <button class="float-btn float-save" id="saveFloatToggle" title="Save File"><i class="fas fa-save"></i></button>
     <button class="float-btn float-multi" id="multiFloatToggle" title="Multi Copy"><i class="fas fa-layer-group"></i></button>
   </div>
 
@@ -707,6 +711,10 @@ Can add multiple lines"></textarea>
     <div class="page-ctx-item danger" data-action="delete"><i class="fas fa-trash"></i><span>Delete page</span></div>
   </div>
 
+  <!-- Unique ID for this file copy, so each downloaded/saved file keeps its
+       own separate browser storage and never shows another file's old edits -->
+  <script id="fileId" type="application/json">"fmseebab9zlm0t8uf"</script>
+
   <!-- EMBEDDED DATA -->
   <script id="embeddedData" type="application/json">{
   "pages": [
@@ -714,6 +722,11 @@ Can add multiple lines"></textarea>
       "id": 1,
       "name": "Packet tracer",
       "color": "#e74c3c"
+    },
+    {
+      "id": 1785832097760,
+      "name": "set up test",
+      "color": "#4ecdc4"
     }
   ],
   "items": [
@@ -809,6 +822,8 @@ Can add multiple lines"></textarea>
     const updateBtn = document.getElementById('updateBtn');
     const saveFileBtn = document.getElementById('saveFileBtn');
     const saveFloatToggle = document.getElementById('saveFloatToggle');
+    const fileIdScript = document.getElementById('fileId');
+    const embeddedDataScript = document.getElementById('embeddedData');
 
     const colorOptions = Array.from(document.querySelectorAll('.color-option'));
     const customColor = document.getElementById('customColor');
@@ -880,6 +895,19 @@ Can add multiple lines"></textarea>
     let panX = 0, panY = 0, zoomScale = 1;
     let isPanning = false;
     let panStart = null;
+
+    // Per-file identity, so every saved/downloaded copy has its own isolated
+    // browser storage and never shows edits from a different copy of the file.
+    let currentFileId = '';
+    let fileHandle = null; // FileSystemFileHandle, kept only for this tab's session
+
+    function generateFileId(){
+      return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    }
+
+    function storageKey(){
+      return 'clipboard_v10_data_' + currentFileId;
+    }
 
     // Auto-hide
     let autoHideTimer = null;
@@ -982,11 +1010,22 @@ Can add multiple lines"></textarea>
 
     // Load Data
     function loadData(){
+      // Figure out this file's unique identity first. If this copy of the
+      // file has never been opened before in this browser, it gets a fresh
+      // ID here, which guarantees it will use the data embedded in the file
+      // itself instead of possibly-stale data left behind by another copy.
+      try{
+        const raw = JSON.parse(fileIdScript.textContent || '""');
+        currentFileId = (typeof raw === 'string' && raw) ? raw : '';
+      }catch(e){ currentFileId = ''; }
+      if(!currentFileId) currentFileId = generateFileId();
+      fileIdScript.textContent = JSON.stringify(currentFileId);
+
       let embedded = {pages:[], items:[]};
-      try{ embedded = JSON.parse(document.getElementById('embeddedData').textContent || '{"pages":[],"items":[]}'); }catch(e){}
+      try{ embedded = JSON.parse(embeddedDataScript.textContent || '{"pages":[],"items":[]}'); }catch(e){}
 
       let ls = {pages:[], items:[]};
-      try{ ls = JSON.parse(localStorage.getItem('clipboard_v10_data') || '{"pages":[],"items":[]}'); }catch(e){}
+      try{ ls = JSON.parse(localStorage.getItem(storageKey()) || '{"pages":[],"items":[]}'); }catch(e){}
 
       const usePages = (Array.isArray(ls.pages) && ls.pages.length) ? ls.pages : ((Array.isArray(embedded.pages) && embedded.pages.length) ? embedded.pages : []);
       const useItems = (Array.isArray(ls.items) && ls.items.length) ? ls.items : ((Array.isArray(embedded.items) && embedded.items.length) ? embedded.items : []);
@@ -1017,7 +1056,7 @@ Can add multiple lines"></textarea>
     }
 
     function saveData(){
-      localStorage.setItem('clipboard_v10_data', JSON.stringify({pages, items}));
+      localStorage.setItem(storageKey(), JSON.stringify({pages, items}));
     }
 
     function boardBounds(){
@@ -1576,25 +1615,66 @@ Can add multiple lines"></textarea>
       notify('Page deleted', 'info');
     }
 
-    function saveToFile(){
-      const embeddedDataScript = document.getElementById('embeddedData');
-      if(embeddedDataScript){
-        embeddedDataScript.textContent = JSON.stringify({pages, items}, null, 2);
-      }
-      
-      const docHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    // Builds the full, self-contained HTML for this document with the
+    // latest pages/items and this file's identity embedded into it.
+    function buildDocHtml(){
+      embeddedDataScript.textContent = JSON.stringify({pages, items}, null, 2);
+      fileIdScript.textContent = JSON.stringify(currentFileId);
+      return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    }
+
+    function downloadAsNewFile(){
+      // A classic download always produces a separate file on disk, so give
+      // it its own fresh identity to avoid ever colliding with another
+      // copy's saved browser storage.
+      currentFileId = generateFileId();
+      const docHtml = buildDocHtml();
       const blob = new Blob([docHtml], {type:'text/html'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = 'clipboard-manager.html';
-      
+
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      notify(`Downloaded clipboard-manager.html!`, 'success');
+      saveData();
+      notify('Downloaded clipboard-manager.html!', 'success');
       resetAutoHideTimer();
+    }
+
+    async function saveToFile(){
+      // Prefer directly writing back to the file on disk (a true "Save")
+      // when the browser supports it.
+      if('showSaveFilePicker' in window){
+        try{
+          if(!fileHandle){
+            fileHandle = await window.showSaveFilePicker({
+              suggestedName: 'clipboard-manager.html',
+              types: [{ description: 'HTML File', accept: {'text/html': ['.html']} }]
+            });
+          }
+          const docHtml = buildDocHtml();
+          const writable = await fileHandle.createWritable();
+          await writable.write(docHtml);
+          await writable.close();
+          saveData();
+          notify('Saved!', 'success');
+          resetAutoHideTimer();
+          return;
+        }catch(err){
+          fileHandle = null;
+          if(err && err.name === 'AbortError'){
+            // User cancelled the save dialog - don't fall back to a download.
+            return;
+          }
+          // Not permitted in this browser/context (e.g. some file:// setups
+          // block it) - fall through to a normal download instead.
+        }
+      }
+
+      downloadAsNewFile();
     }
 
     // ========= Board Interactions (Drag & Dynamic Resize Alignment) =========
