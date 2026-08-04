@@ -372,6 +372,20 @@
     }
     .board.panning{cursor:grabbing;}
 
+    /* Infinite grid background layer - always covers the full viewport,
+       synced to pan/zoom in JS so there's no edge/white-space when panning or zooming */
+    .grid-bg{
+      position:absolute;
+      inset:0;
+      background-image:
+        linear-gradient(to right, rgba(203, 213, 225, 0.45) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
+      background-size:16px 16px;
+      background-position:0 0;
+      pointer-events:none;
+      z-index:0;
+    }
+
     /* Large virtual canvas that pans & scales inside the board viewport */
     .canvas-layer{
       position:absolute;
@@ -380,11 +394,8 @@
       width:6000px;
       height:6000px;
       transform-origin:0 0;
-      background-image:
-        linear-gradient(to right, rgba(203, 213, 225, 0.45) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
-      background-size:16px 16px;
       will-change:transform;
+      z-index:1;
     }
 
     /* Floating zoom control bar */
@@ -573,6 +584,7 @@ Can add multiple lines"></textarea>
 
     <!-- Main Canvas Board (Grid Pattern) -->
     <div class="board" id="board">
+      <div class="grid-bg" id="gridBg"></div>
       <div class="canvas-layer" id="canvasLayer">
       <div class="align-guides" id="alignGuides">
         <div class="guide-line v" id="guideV" style="left: 896.8px;"></div>
@@ -786,6 +798,7 @@ Can add multiple lines"></textarea>
 
     // Elements
     const board = document.getElementById('board');
+    const gridBg = document.getElementById('gridBg');
     const canvasLayer = document.getElementById('canvasLayer');
     const zoomInBtn = document.getElementById('zoomInBtn');
     const zoomOutBtn = document.getElementById('zoomOutBtn');
@@ -1026,6 +1039,11 @@ Can add multiple lines"></textarea>
 
     function applyTransform(){
       canvasLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+      // Keep the infinite grid background in perfect sync with the canvas
+      // pan/zoom so the grid never runs out, no matter which direction you go.
+      const cell = 16 * zoomScale;
+      gridBg.style.backgroundSize = `${cell}px ${cell}px`;
+      gridBg.style.backgroundPosition = `${panX}px ${panY}px`;
     }
 
     function updateZoomLabel(){
