@@ -516,12 +516,8 @@
       
       <div class="page-tab active" data-page-id="1" draggable="true" style="background: linear-gradient(135deg, rgb(231, 76, 60) 0%, rgb(196, 64, 51) 100%);">
           <i class="fas fa-grip-vertical drag-handle"></i>
-          <span class="page-number">Packet tracer</span>
-          <span class="item-count" style="display:block;color:#e74c3c;">6</span>
-        </div><div class="page-tab" data-page-id="1785832097760" draggable="true" style="background: linear-gradient(135deg, rgb(78, 205, 196) 0%, rgb(66, 174, 166) 100%);">
-          <i class="fas fa-grip-vertical drag-handle"></i>
-          <span class="page-number">set up test</span>
-          <span class="item-count" style="display:none;color:#4ecdc4;">0</span>
+          <span class="page-number">Page 1</span>
+          <span class="item-count" style="display:none;color:#e74c3c;">0</span>
         </div><button class="page-add-btn" id="pageAddBtn" title="Add new page">
         <i class="fas fa-plus"></i>
       </button>
@@ -531,9 +527,9 @@
     <div class="add-panel-wrapper">
       <div class="add-panel collapsed" id="addPanel">
         <div class="panel-title"><i class="fas fa-clipboard-list" style="color:#6366f1;"></i>Clipboard Manager</div>
-        <div class="current-page-indicator" id="currentPageIndicator">📄 Packet tracer</div>
-        <div class="mode-label" id="modeLabel">Mode: Edit selected</div>
-        <div class="edit-info" id="editInfo" style="display: block;">Editing Box ID: <span id="editId">1785829327426</span></div>
+        <div class="current-page-indicator" id="currentPageIndicator">📄 Page 1</div>
+        <div class="mode-label" id="modeLabel">Mode: Add new</div>
+        <div class="edit-info" id="editInfo" style="display: none;">Editing Box ID: <span id="editId"></span></div>
 
         <label>Heading (optional - shown on box)</label>
         <div class="resizable-input-wrapper">
@@ -553,9 +549,9 @@ Can add multiple lines"></textarea>
           <div class="color-option" data-color="#6366f1" style="background:#6366f1"></div>
           <div class="color-option" data-color="#ec4899" style="background:#ec4899"></div>
           <div class="color-option" data-color="#f59e0b" style="background:#f59e0b"></div>
-          <div class="color-option selected" data-color="#10b981" style="background:#10b981"></div>
+          <div class="color-option" data-color="#10b981" style="background:#10b981"></div>
           <div class="color-option" data-color="#3b82f6" style="background:#3b82f6"></div>
-          <div class="color-option" data-color="#8b5cf6" style="background:#8b5cf6"></div>
+          <div class="color-option selected" data-color="#8b5cf6" style="background:#8b5cf6"></div>
         </div>
 
         <div class="custom-color">
@@ -564,7 +560,7 @@ Can add multiple lines"></textarea>
         </div>
 
         <button class="btn" id="addBtn"><i class="fas fa-plus"></i>Add new box</button>
-        <button class="btn secondary" id="updateBtn"><i class="fas fa-pen"></i>Update selected box</button>
+        <button class="btn secondary" id="updateBtn" disabled=""><i class="fas fa-pen"></i>Update selected box</button>
         <button class="btn save" id="saveFileBtn"><i class="fas fa-save"></i>Save File</button>
         <button class="btn multi-toggle-btn" id="multiCopyBtn"><i class="fas fa-layer-group"></i>Multi Copy</button>
 
@@ -588,43 +584,13 @@ Can add multiple lines"></textarea>
 
     <!-- Main Canvas Board (Grid Pattern) -->
     <div class="board" id="board">
-      <div class="grid-bg" id="gridBg" style="background-size: 16px 16px; background-position: -5.60004px 40.8px;"></div>
-      <div class="canvas-layer" id="canvasLayer" style="transform: translate(-5.60004px, 40.8px) scale(1);">
+      <div class="grid-bg" id="gridBg" style="background-size: 16px 16px; background-position: 0px 0px;"></div>
+      <div class="canvas-layer" id="canvasLayer" style="transform: translate(0px, 0px) scale(1);">
       <div class="align-guides" id="alignGuides">
         <div class="guide-line v" id="guideV" style="left: 896.8px;"></div>
         <div class="guide-line h" id="guideH" style="top: 341.6px;"></div>
       </div>
-    <div class="clipboard-item" data-id="1785767964228" style="left: 697.2px; top: 124.8px; width: 179.2px; height: 106.4px; background-color: rgb(16, 185, 129); z-index: 1151;">
-          <div class="copy-indicator">Copied</div>
-          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
-          <div class="item-heading">switchport mode access<br> switchport access vlan 1000<br> no shutdown<br> exit<br>Do wr</div>
-          <div class="resize-handle" title="Resize &amp; Align"></div>
-        </div><div class="clipboard-item" data-id="1785769043614" style="left: 697.2px; top: 249.1px; width: 180px; height: 106.4px; background-color: rgb(213, 83, 83); z-index: 1152;">
-          <div class="copy-indicator">Copied</div>
-          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
-          <div class="item-heading">no switchport mode access<br> no switchport access vlan 1000<br> no shutdown<br> exit</div>
-          <div class="resize-handle" title="Resize &amp; Align"></div>
-        </div><div class="clipboard-item" data-id="1785827975370" style="left: 697.2px; top: 7.59999px; width: 175.2px; height: 40px; background-color: rgb(59, 130, 246); z-index: 1132;">
-          <div class="copy-indicator">Copied</div>
-          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
-          <div class="item-heading">config t</div>
-          <div class="resize-handle" title="Resize &amp; Align"></div>
-        </div><div class="clipboard-item" data-id="1785828542746" style="left: 896.8px; top: 47.6px; width: 200px; height: 40px; background-color: rgb(139, 92, 246); z-index: 1105;">
-          <div class="copy-indicator">Copied</div>
-          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
-          <div class="item-heading">interface GigabitEthernet0/1</div>
-          <div class="resize-handle" title="Resize &amp; Align"></div>
-        </div><div class="clipboard-item" data-id="1785829141562" style="left: 896.8px; top: 104.8px; width: 200px; height: 40px; background-color: rgb(139, 92, 246); z-index: 1133;">
-          <div class="copy-indicator">Copied</div>
-          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
-          <div class="item-heading">interface Fa0/1</div>
-          <div class="resize-handle" title="Resize &amp; Align"></div>
-        </div><div class="clipboard-item" data-id="1785829327426" style="left: 826.8px; top: 405.5px; width: 140px; height: 60px; background-color: rgb(16, 185, 129); z-index: 1153;">
-          <div class="copy-indicator">Copied</div>
-          <button class="delete-btn" title="Delete"><i class="fas fa-times"></i></button>
-          <div class="item-heading">save memory <br>do wr <br>wr</div>
-          <div class="resize-handle" title="Resize &amp; Align"></div>
-        </div></div>
+    </div>
       </div>
   </div>
 
@@ -649,7 +615,7 @@ Can add multiple lines"></textarea>
         <div class="form-group">
           <label>Choose Color</label>
           <div class="color-picker-wrapper" id="colorPickerWrapper">
-            <div class="color-choice" data-color="#e74c3c" style="background:linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)"></div>
+            <div class="color-choice selected" data-color="#e74c3c" style="background:linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)"></div>
             <div class="color-choice" data-color="#f39c12" style="background:linear-gradient(135deg, #f39c12 0%, #d68910 100%)"></div>
             <div class="color-choice" data-color="#a4c639" style="background:linear-gradient(135deg, #a4c639 0%, #8ba832 100%)"></div>
             <div class="color-choice" data-color="#5dade2" style="background:linear-gradient(135deg, #5dade2 0%, #3498db 100%)"></div>
@@ -658,7 +624,7 @@ Can add multiple lines"></textarea>
             <div class="color-choice" data-color="#e91e63" style="background:linear-gradient(135deg, #e91e63 0%, #c2185b 100%)"></div>
             <div class="color-choice" data-color="#34495e" style="background:linear-gradient(135deg, #34495e 0%, #2c3e50 100%)"></div>
             <div class="color-choice" data-color="#ff6b6b" style="background:linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)"></div>
-            <div class="color-choice selected" data-color="#4ecdc4" style="background:linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)"></div>
+            <div class="color-choice" data-color="#4ecdc4" style="background:linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)"></div>
           </div>
           <div class="custom-color-input">
             <input type="color" id="modalCustomColor" value="#e74c3c">
@@ -677,8 +643,8 @@ Can add multiple lines"></textarea>
     </div>
   </div>
 
-  <div class="notification" id="notification" style="background: rgb(16, 185, 129);">Page "set up test" created</div>
-  <div class="copy-toast" id="copyToast" style="left: 914.4px; top: 350px;">Copied</div>
+  <div class="notification" id="notification" style="background: rgb(16, 185, 129);">Page renamed</div>
+  <div class="copy-toast" id="copyToast" style="left: 1314.79px; top: 66.7875px;">Copied</div>
 
   <div class="floating-buttons">
     <button class="float-btn float-save" id="saveFloatToggle" title="Save File"><i class="fas fa-save"></i></button>
@@ -691,7 +657,7 @@ Can add multiple lines"></textarea>
     <button class="multi-clear-btn" id="multiClearBtn">Clear All</button>
   </div>
 
-  <div class="context-menu" id="contextMenu" style="left: 664px; top: 151px;">
+  <div class="context-menu" id="contextMenu" style="left: 1200px; top: 87px;">
     <div class="ctx-item" data-action="copy"><i class="fas fa-copy"></i><span>Copy content</span></div>
     <div class="ctx-item" data-action="edit"><i class="fas fa-pen"></i><span>Edit (select)</span></div>
     <div class="ctx-item" data-action="duplicate"><i class="fas fa-clone"></i><span>Duplicate</span></div>
@@ -705,7 +671,7 @@ Can add multiple lines"></textarea>
     <div class="ctx-item danger" data-action="delete"><i class="fas fa-trash"></i><span>Delete</span></div>
   </div>
 
-  <div class="page-context-menu" id="pageContextMenu">
+  <div class="page-context-menu" id="pageContextMenu" style="left: 86px; top: 37px;">
     <div class="page-ctx-item" data-action="rename"><i class="fas fa-edit"></i><span>Rename page</span></div>
     <div class="page-ctx-item" data-action="duplicate"><i class="fas fa-copy"></i><span>Duplicate page</span></div>
     <div class="page-ctx-item danger" data-action="delete"><i class="fas fa-trash"></i><span>Delete page</span></div>
@@ -713,96 +679,18 @@ Can add multiple lines"></textarea>
 
   <!-- Unique ID for this file copy, so each downloaded/saved file keeps its
        own separate browser storage and never shows another file's old edits -->
-  <script id="fileId" type="application/json">"fmseebab9zlm0t8uf"</script>
+  <script id="fileId" type="application/json">"fmseegyla1c0cj45j"</script>
 
   <!-- EMBEDDED DATA -->
   <script id="embeddedData" type="application/json">{
   "pages": [
     {
       "id": 1,
-      "name": "Packet tracer",
+      "name": "Page 1",
       "color": "#e74c3c"
-    },
-    {
-      "id": 1785832097760,
-      "name": "set up test",
-      "color": "#4ecdc4"
     }
   ],
-  "items": [
-    {
-      "id": 1785767964228,
-      "pageId": 1,
-      "heading": "switchport mode access\n switchport access vlan 1000\n no shutdown\n exit\nDo wr",
-      "content": "switchport mode access\n switchport access vlan 1000\n no shutdown\n exit\ndo wr \n",
-      "color": "#10b981",
-      "x": 697.2000732421875,
-      "y": 124.80001068115234,
-      "w": 179.20001220703125,
-      "h": 106.40005493164062,
-      "z": 1151
-    },
-    {
-      "id": 1785769043614,
-      "pageId": 1,
-      "heading": "no switchport mode access\n no switchport access vlan 1000\n no shutdown\n exit",
-      "content": "no switchport mode access\nno switchport access vlan 1000\nno shutdown\nexit\nDo wr",
-      "color": "#d55353",
-      "x": 697.2000732421875,
-      "y": 249.09991455078125,
-      "w": 180.00003051757812,
-      "h": 106.40010070800781,
-      "z": 1152
-    },
-    {
-      "id": 1785827975370,
-      "pageId": 1,
-      "heading": "config t",
-      "content": "config t\n",
-      "color": "#3b82f6",
-      "x": 697.2000732421875,
-      "y": 7.5999908447265625,
-      "w": 175.199951171875,
-      "h": 40,
-      "z": 1132
-    },
-    {
-      "id": 1785828542746,
-      "pageId": 1,
-      "heading": "interface GigabitEthernet0/1",
-      "content": "interface GigabitEthernet0/1",
-      "color": "#8b5cf6",
-      "x": 896.7999267578125,
-      "y": 47.59999084472656,
-      "w": 200,
-      "h": 40,
-      "z": 1105
-    },
-    {
-      "id": 1785829141562,
-      "pageId": 1,
-      "heading": "interface Fa0/1",
-      "content": "interface Fa0/1",
-      "color": "#8b5cf6",
-      "x": 896.7999267578125,
-      "y": 104.80001068115234,
-      "w": 200,
-      "h": 40,
-      "z": 1133
-    },
-    {
-      "id": 1785829327426,
-      "pageId": 1,
-      "heading": "save memory \ndo wr \nwr",
-      "content": "do wr\nwr\nsave memory\n",
-      "color": "#10b981",
-      "x": 826.7999267578125,
-      "y": 405.5,
-      "w": 140,
-      "h": 60,
-      "z": 1153
-    }
-  ]
+  "items": []
 }</script>
 
   <script>
